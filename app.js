@@ -17,7 +17,8 @@ function defineHeaders(token) {
         'Sec-Fetch-Mode': ' cors',
         'Sec-Fetch-Site': ' same-origin',
         'TE': ' trailers',
-        'DNT': 1
+        'DNT': 1,
+        'service': 'Dream',
     };
 }
 
@@ -52,8 +53,69 @@ function getTaskID(token) {
     });
 }
 
+function getStyles(token) {
+    return new Promise(function(resolve, reject) {
+        request({
+            'gzip': true,
+            'method': 'GET',
+            'url': 'https://app.wombo.art/api/styles',
+            'headers': defineHeaders(token),
+        }, function(error, res, body) {
+            if (!error && res.statusCode == 200) {
+                resolve(JSON.parse(body));
+            } else {
+                reject(error);
+            }
+        });
+    });
+}
+
+// Get URL to upload photo for later use. Requires Wombo account (not anonymous).
+function getUploadURL(token) {
+    return new Promise(function(resolve, reject) {
+        request({
+            'method': 'POST',
+            'url': 'https://mediastore.api.wombo.ai/io/',
+            'headers': defineHeaders(token),
+            json: {
+                media_expiry: 'HOURS_72',
+                media_suffix: 'jpeg',
+                num_uploads: 1,
+            },
+        }, function(error, res, body) {
+            if (!error && res.statusCode == 200) {
+                resolve(JSON.parse(body).media_url);
+            } else {
+                reject(error);
+            }
+        });
+    });
+}
+
+// Upload photo (JPG / JPEG only) to Wombo. Requires Wombo account (not anonymous).
+async function uploadPhoto(token, imageBuffer) {
+    let URL = await getUploadURL(token);
+    return new Promise(function(resolve, reject) {
+        request({
+            'method': 'PUT',
+            'url': URL,
+            headers: {
+                'Content-Type': 'image/jpeg',
+                'Content-Length': imageBuffer.length,
+            },
+            body: imageBuffer,
+        }, function(error, res, body) {
+            if (!error && res.statusCode == 200) {
+                resolve(body);
+            } else {
+                reject(error);
+            }
+        });
+    });
+}
+
 // Using the new task ID, supply a prompt and start the image generation process.
-function createTask(token, taskID, prompt) {
+function createTask(token, taskID, prompt, style) {
     return new Promise(function(resolve, reject) {
         request({
             'method': 'PUT',
@@ -62,7 +124,7 @@ function createTask(token, taskID, prompt) {
             json: {
                 "input_spec": {
                     "prompt": prompt,
-                    "style": 18,
+                    "style": style,
                     "display_freq": 10
                 }
             }
@@ -95,12 +157,10 @@ function checkStatus(token, taskID) {
     });
 }
 
-async function main() {
-    let promptValue = readline.question("Enter prompt: ");
-    let token = await getAuthToken(); // Get the authorization token from Google
+async function generateImage(token, promptValue, style) {
     let taskID = await getTaskID(token); // Get the task ID
     console.log("creating task...");
-    await createTask(token, taskID, promptValue); // Create the task
+    await createTask(token, taskID, promptValue, style); // Create the task
     var status = { "state": "generating" }; // Set the default status to generating
     var result;
     while (status.state == "generating" || status.state == "input") { // While the task is still generating
@@ -109,7 +169,23 @@ async function main() {
         await new Promise(resolve => setTimeout(resolve, 1000));
         status.state = result.state; // Set the status to the current state and exit loop
     }
-    console.log(result.result.final) // Print the final image URL
+    return result.result.final
+}
+
+async function main() {
+    let token = await getAuthToken(); // Get the authorization token from Google
+    let styles = await getStyles(token);
+    styles.forEach(style => {
+        delete style.is_visible;
+        delete style.created_at;
+        delete style.updated_at;
+        delete style.deleted_at;
+    });
+    console.log(styles)
+    let styleValue = readline.question("Enter style number: ");
+    let promptValue = readline.question("Enter prompt: ");
+    let output = await generateImage(token, promptValue, styleValue);
+    console.log(output);
 }
 
 main();
