@@ -1,21 +1,21 @@
 var request = require('request');
 const { printTable } = require('console-table-printer');
 
-function defineHeaders(token) {
+function defineHeaders(token, type = "text/plain;charset=UTF-8") {
     return {
-        'User-Agent': ' Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:96.0) Gecko/20100101 Firefox/96.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:96.0) Gecko/20100101 Firefox/96.0',
         "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
-        'Accept-Language': ' fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3',
-        'Referer': ' https://app.wombo.art/',
+        'Accept-Language': 'fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3',
+        'Referer': 'https://app.wombo.art/',
         'Authorization': 'bearer ' + token,
-        'Content-Type': "text/plain;charset=UTF-8",
-        'Origin': ' https://app.wombo.art',
-        'Connection': ' keep-alive',
-        'Sec-Fetch-Dest': ' empty',
-        'Sec-Fetch-Mode': ' cors',
-        'Sec-Fetch-Site': ' same-origin',
-        'TE': ' trailers',
+        'Content-Type': type,
+        'Origin': 'https://app.wombo.art',
+        'Connection': 'keep-alive',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin',
+        'TE': 'trailers',
         'DNT': 1,
         'service': 'Dream',
     };
@@ -74,15 +74,15 @@ const getUploadURL = (token) => {
         request({
             'method': 'POST',
             'url': 'https://mediastore.api.wombo.ai/io/',
-            'headers': defineHeaders(token),
+            'headers': defineHeaders(token, "application/json"),
             json: {
-                media_expiry: 'HOURS_72',
-                media_suffix: 'jpeg',
-                num_uploads: 1,
-            },
+                "media_expiry": "HOURS_72", 
+                "media_suffix": "jpeg",
+                "num_uploads": 1
+            }
         }, function(error, res, body) {
             if (!error && res.statusCode == 200) {
-                resolve(JSON.parse(body).media_url);
+                resolve(body[0]);
             } else {
                 reject(error);
             }
@@ -96,7 +96,7 @@ const uploadPhoto = async(token, imageBuffer) => {
     return new Promise(function(resolve, reject) {
         request({
             'method': 'PUT',
-            'url': URL,
+            'url': URL.media_url,
             headers: {
                 'Content-Type': 'image/jpeg',
                 'Content-Length': imageBuffer.length,
@@ -104,7 +104,7 @@ const uploadPhoto = async(token, imageBuffer) => {
             body: imageBuffer,
         }, function(error, res, body) {
             if (!error && res.statusCode == 200) {
-                resolve(body);
+                resolve(URL);
             } else {
                 reject(error);
             }
@@ -113,19 +113,24 @@ const uploadPhoto = async(token, imageBuffer) => {
 }
 
 // Using the new task ID, supply a prompt and start the image generation process.
-const createTask = (token, taskID, prompt, style) => {
+const createTask = (token, taskID, prompt, style, image = null) => {
+    var jsonData = {
+        "input_spec": {
+            "prompt": prompt,
+            "style": style,
+            "display_freq": 10
+        }
+    };
+    // if (image != null) {
+    //     jsonData.input_image = image;
+    // }
+
     return new Promise(function(resolve, reject) {
         request({
             'method': 'PUT',
             'url': 'https://app.wombo.art/api/tasks/' + taskID,
             'headers': defineHeaders(token),
-            json: {
-                "input_spec": {
-                    "prompt": prompt,
-                    "style": style,
-                    "display_freq": 10
-                }
-            }
+            json: jsonData
         }, function(error, res, body) {
             if (!error && res.statusCode == 200) {
                 resolve(body);
@@ -155,10 +160,10 @@ const checkStatus = (token, taskID) => {
     });
 }
 
-const generateImage = async(token, promptValue, style) => {
+const generateImage = async(token, promptValue, style, image = null) => {
     let taskID = await getTaskID(token); // Get the task ID
     console.log("creating task...");
-    await createTask(token, taskID, promptValue, style); // Create the task
+    await createTask(token, taskID, promptValue, style, image); // Create the task
     var status = { "state": "generating" }; // Set the default status to generating
     var result;
     while (status.state == "generating" || status.state == "input" || status.state == "pending") { // While the task is still generating
@@ -167,10 +172,11 @@ const generateImage = async(token, promptValue, style) => {
         await new Promise(resolve => setTimeout(resolve, 1000));
         status.state = result.state; // Set the status to the current state and exit loop
     }
-    return result.result.final
+    return result
 }
 
 exports.generateImage = generateImage;
 exports.uploadPhoto = uploadPhoto;
 exports.getStyles = getStyles;
 exports.printStyles = printStyles;
+exports.getUploadURL = getUploadURL;

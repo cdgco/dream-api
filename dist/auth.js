@@ -4,7 +4,7 @@ const signUp = () => {
     return new Promise(function(resolve, reject) {
         request({ 'method': 'POST', 'url': 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyDCvp5MTJLUdtBYEKYWXJrlLzu1zuKM6Xw'}, function(error, res, body) {
             if (!error && res.statusCode == 200) {
-                resolve(JSON.parse(body).idToken);
+                resolve(JSON.parse(body));
             } else {
                 reject(error);
             }
@@ -23,7 +23,7 @@ const emailSignUp = (email, password) => {
             } 
         }, function(error, res, body) {
             if (!error && res.statusCode == 200) {
-                resolve(JSON.parse(body));
+                resolve(body);
             } else {
                 reject(error);
             }
@@ -43,7 +43,7 @@ const emailSignIn = (email, password) => {
             }
         }, function(error, res, body) {
             if (!error && res.statusCode == 200) {
-                resolve(JSON.parse(body));
+                resolve(body);
             } else {
                 reject(error);
             }
