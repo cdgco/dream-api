@@ -1,7 +1,6 @@
 var request = require('request');
-const readline = require('readline-sync');
+const { printTable } = require('console-table-printer');
 
-// HTTP Headers for API requests to Wombo. Not sure if all attributes are needed, but these have been tested and work.
 function defineHeaders(token) {
     return {
         'User-Agent': ' Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:96.0) Gecko/20100101 Firefox/96.0',
@@ -22,21 +21,8 @@ function defineHeaders(token) {
     };
 }
 
-// First step, get an authorization token from Google to access the Wombo API. Creates an anonymous account that lasts for 1 hour.
-function getAuthToken() {
-    return new Promise(function(resolve, reject) {
-        request({ 'method': 'POST', 'url': 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDCvp5MTJLUdtBYEKYWXJrlLzu1zuKM6Xw' }, function(error, res, body) {
-            if (!error && res.statusCode == 200) {
-                resolve(JSON.parse(body).idToken);
-            } else {
-                reject(error);
-            }
-        });
-    });
-}
-
 // Using the Google API token, create a new task and get the task ID.
-function getTaskID(token) {
+const getTaskID = (token) => {
     return new Promise(function(resolve, reject) {
         request({
             'method': 'POST',
@@ -53,7 +39,7 @@ function getTaskID(token) {
     });
 }
 
-function getStyles(token) {
+const getStyles = (token) => {
     return new Promise(function(resolve, reject) {
         request({
             'gzip': true,
@@ -70,8 +56,20 @@ function getStyles(token) {
     });
 }
 
+const printStyles = async(token) => {
+    let styles = await getStyles(token);
+    styles.forEach(style => {
+        delete style.is_visible;
+        delete style.created_at;
+        delete style.updated_at;
+        delete style.deleted_at;
+    });
+    styles.sort((a, b) => (a.id > b.id) ? 1 : -1)
+    printTable(styles);
+}
+
 // Get URL to upload photo for later use. Requires Wombo account (not anonymous).
-function getUploadURL(token) {
+const getUploadURL = (token) => {
     return new Promise(function(resolve, reject) {
         request({
             'method': 'POST',
@@ -93,7 +91,7 @@ function getUploadURL(token) {
 }
 
 // Upload photo (JPG / JPEG only) to Wombo. Requires Wombo account (not anonymous).
-async function uploadPhoto(token, imageBuffer) {
+const uploadPhoto = async(token, imageBuffer) => {
     let URL = await getUploadURL(token);
     return new Promise(function(resolve, reject) {
         request({
@@ -115,7 +113,7 @@ async function uploadPhoto(token, imageBuffer) {
 }
 
 // Using the new task ID, supply a prompt and start the image generation process.
-function createTask(token, taskID, prompt, style) {
+const createTask = (token, taskID, prompt, style) => {
     return new Promise(function(resolve, reject) {
         request({
             'method': 'PUT',
@@ -139,7 +137,7 @@ function createTask(token, taskID, prompt, style) {
 }
 
 // Check the status of the task. This function returns all data including progress photos and result.
-function checkStatus(token, taskID) {
+const checkStatus = (token, taskID) => {
     return new Promise(function(resolve, reject) {
         request({
                 'gzip': true,
@@ -157,13 +155,13 @@ function checkStatus(token, taskID) {
     });
 }
 
-async function generateImage(token, promptValue, style) {
+const generateImage = async(token, promptValue, style) => {
     let taskID = await getTaskID(token); // Get the task ID
     console.log("creating task...");
     await createTask(token, taskID, promptValue, style); // Create the task
     var status = { "state": "generating" }; // Set the default status to generating
     var result;
-    while (status.state == "generating" || status.state == "input") { // While the task is still generating
+    while (status.state == "generating" || status.state == "input" || status.state == "pending") { // While the task is still generating
         console.log("generating...");
         result = await checkStatus(token, taskID); // Get the latest status
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -172,20 +170,7 @@ async function generateImage(token, promptValue, style) {
     return result.result.final
 }
 
-async function main() {
-    let token = await getAuthToken(); // Get the authorization token from Google
-    let styles = await getStyles(token);
-    styles.forEach(style => {
-        delete style.is_visible;
-        delete style.created_at;
-        delete style.updated_at;
-        delete style.deleted_at;
-    });
-    console.log(styles)
-    let styleValue = readline.question("Enter style number: ");
-    let promptValue = readline.question("Enter prompt: ");
-    let output = await generateImage(token, promptValue, styleValue);
-    console.log(output);
-}
-
-main();
+exports.generateImage = generateImage;
+exports.uploadPhoto = uploadPhoto;
+exports.getStyles = getStyles;
+exports.printStyles = printStyles;
