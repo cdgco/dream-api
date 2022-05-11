@@ -1,6 +1,6 @@
 {
-  "name": "wombo-dream-api",
-  "version": "1.0.0",
+  "name": "dream-api",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/app.js",
   "scripts": {
