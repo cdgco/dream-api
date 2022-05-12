@@ -1,23 +1,23 @@
 {
-  "name": "dream-api",
-  "version": "1.0.3",
-  "description": "API wrapper for Wombo Dream",
-  "main": "dist/app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/cdgco/dream-api.git"
-  },
-  "author": "cdgco",
-  "license": "MIT",
-  "dependencies": {
-    "axios": "^0.27.2",
-    "console-table-printer": "^2.11.0"
-  },
-  "bugs": {
-    "url": "https://github.com/cdgco/dream-api/issues"
-  },
-  "homepage": "https://github.com/cdgco/dream-api"
+    "name": "dream-api",
+    "version": "1.0.4",
+    "description": "API wrapper for Wombo Dream",
+    "main": "dist/app.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/cdgco/dream-api.git"
+    },
+    "author": "cdgco",
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^0.27.2",
+        "console-table-printer": "^2.11.0"
+    },
+    "bugs": {
+        "url": "https://github.com/cdgco/dream-api/issues"
+    },
+    "homepage": "https://github.com/cdgco/dream-api"
 }

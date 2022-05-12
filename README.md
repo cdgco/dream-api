@@ -4,7 +4,19 @@ NodeJS wrapper for Wombo Dream API.
 
 # Installation
 
-`npm i dream-api`
+Run `npm i dream-api`
+
+# Usage
+
+```
+const WomboDream = require('dream-api');
+
+async function main() {
+    let token = await WomboDream.signUp();
+    console.log(await WomboDream.generateImage(token.idToken, 1, "dog"));
+}
+```
+
 
 # Functions
 <hr>
@@ -127,15 +139,4 @@ NodeJS wrapper for Wombo Dream API.
 - `token`: `string` Access token.
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
-  - token must be provided for a user account.
-
-# Usage
-
-```
-const WomboDream = require('dream-api');
-
-async function main() {
-    let token = await WomboDream.signUp();
-    console.log(await WomboDream.generateImage(token.idToken, 1, "dog"));
-}
-```
+  - token must be provided for a non-guest user account.
