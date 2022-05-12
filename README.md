@@ -1,11 +1,22 @@
 # Wombo Dream API
-NodeJS API for Wombo Dream
 
-Proof of concept. Takes input string only. No option to upload images or perform user functions at the moment.
+Proof of concept NodeJS wrapper for Wombo Dream API. Currently takes input string only.
 
 # Installation
 
 `npm i dream-api`
+
+# Functions
+`getStyles()` - Promise that returns an array of styles.
+
+`printStyles()` - Promise that prints the styles in a formatted table.
+
+`generateImage(style, prompt [, imageBuffer])` - Promise that generates an image based on the style and prompt.
+
+- `style` must be the number corresponding to the desired style.
+- `prompt` must be a string of up to 100 characters.
+- `imageBuffer` is the optional buffer of a jpg/jpeg image to influence the generated image. This function is not implemented yet.
+
 
 # Usage
 
