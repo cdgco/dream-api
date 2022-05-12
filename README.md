@@ -8,6 +8,7 @@ Run `npm i dream-api`
 
 # Usage
 
+## Generate an image from a text prompt
 ```
 const WomboDream = require('dream-api');
 
@@ -15,8 +16,52 @@ async function main() {
     let token = await WomboDream.signUp();
     console.log(await WomboDream.generateImage(token.idToken, 1, "dog"));
 }
+
+main();
 ```
 
+## Generate an image from a text prompt and input image
+```
+async function main() {
+    let buffer = fs.readFileSync('image.jpg');
+    let token = await WomboDream.signUp("email@email.com", "password", "username");
+    let image = await WomboDream.uploadImage(buffer, token.idToken);
+    console.log(await WomboDream.generateImage(token.idToken, 1, "dog", image, "HIGH"));
+}
+
+main();
+```
+
+## Generate an image, save it, and get the URL to purchase a print
+```
+async function main() {
+    let token = await WomboDream.signUp();
+    let taskID = await WomboDream.getTaskID(token);
+    await createTask(token, taskID, promptValue, style, imageId, weight);
+    var status = { "state": "generating" };
+    var result;
+    while (status.state == "generating" || status.state == "input" || status.state == "pending") {
+        result = await checkStatus(token, taskID);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        status.state = result.state;
+    }
+    saveToGallery(token.idToken, taskID, { "name": "My Image", "public": false, "visible": true }); 
+    console.log(await WomboDream.getTaskShopURL(token.idToken, taskID));
+}
+
+main();
+```
+
+## Refresh token and print user gallery
+```
+async function main() {
+    let token = await WomboDream.signIn("email@email.com", "password");
+    let token = await WomboDream.refreshToken(token.refreshToken);
+    console.log(await WomboDream.getGallery(token.idToken));
+}
+
+main();
+```
 
 # Functions
 <hr>
@@ -27,7 +72,7 @@ async function main() {
 - `password`: `string` (Optional) Password.
 - `username`: `string` (Optional) Username. Must not already exist.
 
-`signIn([email, password])` - Signs in a user account.
+`signIn(email, password)` - Signs in a user account.
 - `email`: `string` Email address.
 - `password`: `string` Password.
 
@@ -63,7 +108,7 @@ async function main() {
 
 ## Image Generation
 
-`generateImage(token, style, prompt [, image] [, weight] [, save] [, saveSettings])` - Generates an image based on the style, prompt and input image.
+`generateImage(token, style, prompt [, image [, weight]] [, save [, saveSettings]])` - Generates an image based on the style, prompt and input image.
 - `token`: `string` Access token.
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
@@ -89,7 +134,7 @@ async function main() {
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
 
-`createTask(token, taskID, prompt, style [, image] [, weight])` - Creates a new image generation task (used internally in generateImage()).
+`createTask(token, taskID, prompt, style [, image [, weight]])` - Creates a new image generation task (used internally in generateImage()).
 - `token`: `string` Access token.
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
