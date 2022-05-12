@@ -1,5 +1,6 @@
 const axios = require('axios').default;
 const { printTable } = require('console-table-printer');
+const Authentication = require('./auth');
 
 function defineHeaders(token, type = "text/plain;charset=UTF-8") {
     return {
@@ -49,7 +50,25 @@ const getTaskID = (token) => {
     });
 }
 
-const getUploadURL = (token) => {
+const getTaskShopURL = (token, taskID) => {
+    return new Promise(function(resolve, reject) {
+        axios.get('https://app.wombo.art/api/shop/' + taskID, {
+                headers: defineHeaders(token)
+            })
+            .then(function(response) {
+                resolve(response.data);
+            })
+            .catch(function(error) {
+                resolve(error);
+            });
+    });
+}
+
+const getUploadURL = async(token = "") => {
+    if (token == "") {
+        token = await Authentication.signUp();
+        token = token.idToken;
+    }
     return new Promise(function(resolve, reject) {
         axios.post('https://mediastore.api.wombo.ai/io/', {
                 "media_expiry": "HOURS_72",
@@ -67,7 +86,11 @@ const getUploadURL = (token) => {
     });
 }
 
-const uploadPhoto = async(token, imageBuffer) => {
+const uploadPhoto = async(imageBuffer, token = "") => {
+    if (token == "") {
+        token = await Authentication.signUp();
+        token = token.idToken;
+    }
     let URL = await getUploadURL(token);
     return new Promise(function(resolve, reject) {
         axios.put(URL.media_url, imageBuffer, {
@@ -77,7 +100,7 @@ const uploadPhoto = async(token, imageBuffer) => {
                 },
             })
             .then(function(response) {
-                resolve(URL);
+                resolve(URL.id);
             })
             .catch(function(error) {
                 resolve(error);
@@ -86,7 +109,7 @@ const uploadPhoto = async(token, imageBuffer) => {
 }
 
 // Using the new task ID, supply a prompt and start the image generation process.
-const createTask = (token, taskID, prompt, style, image = null) => {
+const createTask = (token, taskID, prompt, style, imageId = null, weight = "MEDIUM") => {
     var jsonData = {
         "input_spec": {
             "prompt": prompt,
@@ -94,9 +117,12 @@ const createTask = (token, taskID, prompt, style, image = null) => {
             "display_freq": 10
         }
     };
-    // if (image != null) {
-    //     jsonData.input_image = image;
-    // }
+    if (imageId != null) {
+        jsonData.input_spec.input_image = {
+            "mediastore_id": imageId,
+            "weight": weight
+        }
+    }
 
     return new Promise(function(resolve, reject) {
         axios.put('https://app.wombo.art/api/tasks/' + taskID, jsonData, {
@@ -106,7 +132,7 @@ const createTask = (token, taskID, prompt, style, image = null) => {
                 resolve(response.data);
             })
             .catch(function(error) {
-                resolve(error);
+                resolve(error.response.data);
             });
     });
 }
@@ -126,10 +152,44 @@ const checkStatus = (token, taskID) => {
     });
 }
 
-const generateImage = async(token, promptValue, style, image = null) => {
+// User account must have username set in order to save
+const saveToGallery = async(token, taskID, settings = { "name": "", "public": false, "visible": true }) => {
+    return new Promise(function(resolve, reject) {
+        axios.post('https://app.wombo.art/api/gallery/', {
+                "task_id": taskID,
+                "name": settings.name,
+                "is_public": settings.public,
+                "is_prompt_visible": settings.visible
+            }, {
+                headers: defineHeaders(token)
+            })
+            .then(function(response) {
+                resolve(response.data);
+            })
+            .catch(function(error) {
+                resolve(error);
+            });
+    });
+}
+
+const getGallery = (token) => {
+    return new Promise(function(resolve, reject) {
+        axios.get('https://app.wombo.art/api/gallery/', {
+                headers: defineHeaders(token)
+            })
+            .then(function(response) {
+                resolve(response.data);
+            })
+            .catch(function(error) {
+                resolve(error);
+            });
+    });
+}
+
+const generateImage = async(token, style, promptValue, imageId = null, weight = "MEDIUM", save = false, saveSettings = { "name": "", "public": false, "visible": true }) => {
     let taskID = await getTaskID(token); // Get the task ID
     console.log("creating task...");
-    await createTask(token, taskID, promptValue, style, image); // Create the task
+    await createTask(token, taskID, promptValue, style, imageId, weight); // Create the task
     var status = { "state": "generating" }; // Set the default status to generating
     var result;
     while (status.state == "generating" || status.state == "input" || status.state == "pending") { // While the task is still generating
@@ -137,6 +197,9 @@ const generateImage = async(token, promptValue, style, image = null) => {
         result = await checkStatus(token, taskID); // Get the latest status
         await new Promise(resolve => setTimeout(resolve, 1000));
         status.state = result.state; // Set the status to the current state and exit loop
+    }
+    if (save) {
+        saveToGallery(token, taskID, saveSettings); // Save the task to the gallery
     }
     return result
 }
@@ -149,3 +212,6 @@ exports.uploadPhoto = uploadPhoto;
 exports.createTask = createTask;
 exports.checkStatus = checkStatus;
 exports.generateImage = generateImage;
+exports.getTaskShopURL = getTaskShopURL;
+exports.saveToGallery = saveToGallery;
+exports.getGallery = getGallery;

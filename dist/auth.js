@@ -1,10 +1,11 @@
 const axios = require('axios').default;
 
-const signUp = (email = "", password = "") => {
+const signUp = (email = "", password = "", username = "") => {
     var jsonData = {}
-    if (email != "" && password != "") {
+    if (email != "" && password != "" && username != "") {
         jsonData.email = email;
         jsonData.password = password;
+        jsonData.displayName = username;
     }
     return new Promise(function(resolve, reject) {
         axios.post('https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyDCvp5MTJLUdtBYEKYWXJrlLzu1zuKM6Xw', jsonData)

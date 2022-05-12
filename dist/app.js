@@ -1,21 +1,17 @@
 const Authentication = require('./auth');
 const Dream = require('./dream')
 
-const getStyles = async() => {
-    let token = await Authentication.signUp();
-    return await Dream.getStyles(token.idToken);
-}
-
-const printStyles = async() => {
-    let token = await Authentication.signUp();
-    await Dream.printStyles(token.idToken);
-}
-
-const generateImage = async(styleValue, promptValue, image = null) => {
-    let token = await Authentication.signUp();
-    return await Dream.generateImage(token.idToken, promptValue, styleValue, image);
-}
-
-exports.getStyles = getStyles;
-exports.printStyles = printStyles;
-exports.generateImage = generateImage;
+exports.signUp = Authentication.signUp;
+exports.signIn = Authentication.signIn;
+exports.refresh = Authentication.refreshToken;
+exports.getStyles = Dream.getStyles;
+exports.printStyles = Dream.printStyles;
+exports.getUploadURL = Dream.getUploadURL;
+exports.uploadPhoto = Dream.uploadPhoto;
+exports.generateImage = Dream.generateImage;
+exports.getTaskID = Dream.getTaskID;
+exports.createTask = Dream.createTask;
+exports.checkStatus = Dream.checkStatus;
+exports.getTaskShopURL = Dream.getTaskShopURL;
+exports.saveToGallery = Dream.saveToGallery;
+exports.getGallery = Dream.getGallery;

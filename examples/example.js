@@ -1,9 +1,10 @@
-const WomboDream = require('dream-api');
+const WomboDream = require('../dist/app');
 
 async function main() {
     await WomboDream.printStyles();
     let styles = await WomboDream.getStyles();
-    console.log(await WomboDream.generateImage(1, "dog"));
+    let token = await WomboDream.signUp();
+    console.log(await WomboDream.generateImage(token.idToken, 1, "dog"));
 }
 
 main();
