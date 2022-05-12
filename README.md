@@ -2,6 +2,8 @@
 
 Promise based NodeJS API for Wombo Dream. 
 
+![](https://img.shields.io/npm/dt/dream-api?style=for-the-badge) ![](https://img.shields.io/npm/v/dream-api?style=for-the-badge) ![](https://img.shields.io/github/repo-size/cdgco/dream-api?style=for-the-badge)
+
 # Installation
 
 Run `npm i dream-api`
