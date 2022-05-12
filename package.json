@@ -7,18 +7,17 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
-		"type": "git",
-		"url": "git+https://github.com/cdgco/dream-api.git"
-	},
+    "type": "git",
+    "url": "git+https://github.com/cdgco/dream-api.git"
+  },
   "author": "cdgco",
   "license": "MIT",
   "dependencies": {
-    "console-table-printer": "^2.11.0",
-    "readline-sync": "^1.4.10",
-    "request": "^2.88.2"
+    "axios": "^0.27.2",
+    "console-table-printer": "^2.11.0"
   },
   "bugs": {
-		"url": "https://github.com/cdgco/dream-api/issues"
-	},
-	"homepage": "https://github.com/cdgco/dream-api"
+    "url": "https://github.com/cdgco/dream-api/issues"
+  },
+  "homepage": "https://github.com/cdgco/dream-api"
 }

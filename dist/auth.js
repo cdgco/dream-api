@@ -1,76 +1,53 @@
-var request = require('request');
+const axios = require('axios').default;
 
-const signUp = () => {
+const signUp = (email = "", password = "") => {
+    var jsonData = {}
+    if (email != "" && password != "") {
+        jsonData.email = email;
+        jsonData.password = password;
+    }
     return new Promise(function(resolve, reject) {
-        request({ 'method': 'POST', 'url': 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyDCvp5MTJLUdtBYEKYWXJrlLzu1zuKM6Xw'}, function(error, res, body) {
-            if (!error && res.statusCode == 200) {
-                resolve(JSON.parse(body));
-            } else {
-                reject(error);
-            }
-        });
+        axios.post('https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyDCvp5MTJLUdtBYEKYWXJrlLzu1zuKM6Xw', jsonData)
+            .then(function(response) {
+                resolve(response.data);
+            })
+            .catch(function(error) {
+                resolve(error);
+            });
     });
 };
 
-const emailSignUp = (email, password) => {
+const signIn = (email, password) => {
     return new Promise(function(resolve, reject) {
-        request({ 
-            'method': 'POST', 
-            'url': 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyDCvp5MTJLUdtBYEKYWXJrlLzu1zuKM6Xw', 
-            json: { 
-                "email": email,
-                "password": password
-            } 
-        }, function(error, res, body) {
-            if (!error && res.statusCode == 200) {
-                resolve(body);
-            } else {
-                reject(error);
-            }
-        });
-    });
-};
-
-const emailSignIn = (email, password) => {
-    return new Promise(function(resolve, reject) {
-        request({ 
-            'method': 'POST', 
-            'url': 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyDCvp5MTJLUdtBYEKYWXJrlLzu1zuKM6Xw',
-            json: { 
+        axios.post('https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyDCvp5MTJLUdtBYEKYWXJrlLzu1zuKM6Xw', {
                 "email": email,
                 "password": password,
                 "returnSecureToken": true
-            }
-        }, function(error, res, body) {
-            if (!error && res.statusCode == 200) {
-                resolve(body);
-            } else {
-                reject(error);
-            }
-        });
+            })
+            .then(function(response) {
+                resolve(response.data);
+            })
+            .catch(function(error) {
+                resolve(error);
+            });
     });
 }
 
 const refreshToken = (token) => {
     return new Promise(function(resolve, reject) {
-        request({ 
-            'method': 'POST', 
-            'url': 'https://securetoken.googleapis.com/v1/token?key=AIzaSyDCvp5MTJLUdtBYEKYWXJrlLzu1zuKM6Xw',
-            json: { 
+        axios.post('https://securetoken.googleapis.com/v1/token?key=AIzaSyDCvp5MTJLUdtBYEKYWXJrlLzu1zuKM6Xw', {
                 "grant_type": "refresh_token",
                 "refresh_token": token
-            }
-        }, function(error, res, body) {
-            if (!error && res.statusCode == 200) {
-                resolve(JSON.parse(body));
-            } else {
-                reject(error);
-            }
-        });
+            })
+            .then(function(response) {
+                resolve(response.data);
+            })
+            .catch(function(error) {
+                resolve(error);
+            });
     });
 }
 
 exports.signUp = signUp;
-exports.emailSignUp = emailSignUp;
-exports.emailSignIn = emailSignIn;
+exports.signIn = signIn;
 exports.refreshToken = refreshToken;

@@ -1,9 +1,8 @@
-const readline = require('readline-sync');
-const WomboDream = require('../dist/app');
+const WomboDream = require('dream-api');
 
 async function main() {
     await WomboDream.printStyles();
-    console.log(await WomboDream.generateImage(readline.question("Enter style number: "), readline.question("Enter prompt: ")));
+    console.log(await WomboDream.generateImage(1, "cat"));
 }
 
 main();
