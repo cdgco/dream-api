@@ -64,8 +64,8 @@ const getTaskShopURL = (token, taskID) => {
     });
 }
 
-const getUploadURL = async(token = "") => {
-    if (token == "") {
+const getUploadURL = async(token = null) => {
+    if (token == null) {
         token = await Authentication.signUp();
         token = token.idToken;
     }
@@ -86,8 +86,8 @@ const getUploadURL = async(token = "") => {
     });
 }
 
-const uploadPhoto = async(imageBuffer, token = "") => {
-    if (token == "") {
+const uploadPhoto = async(imageBuffer, token = null) => {
+    if (token == null) {
         token = await Authentication.signUp();
         token = token.idToken;
     }
@@ -110,6 +110,9 @@ const uploadPhoto = async(imageBuffer, token = "") => {
 
 // Using the new task ID, supply a prompt and start the image generation process.
 const createTask = (token, taskID, prompt, style, imageId = null, weight = "MEDIUM") => {
+    if (weight != "LOW" && weight != "MEDIUM" && weight != "HIGH") {
+        weight = "MEDIUM";
+    }
     var jsonData = {
         "input_spec": {
             "prompt": prompt,
@@ -154,6 +157,9 @@ const checkStatus = (token, taskID) => {
 
 // User account must have username set in order to save
 const saveToGallery = async(token, taskID, settings = { "name": "", "public": false, "visible": true }) => {
+    if (settings == null) {
+        settings = { "name": "", "public": false, "visible": true };
+    }
     return new Promise(function(resolve, reject) {
         axios.post('https://app.wombo.art/api/gallery/', {
                 "task_id": taskID,
@@ -186,20 +192,46 @@ const getGallery = (token) => {
     });
 }
 
-const generateImage = async(token, style, promptValue, imageId = null, weight = "MEDIUM", save = false, saveSettings = { "name": "", "public": false, "visible": true }) => {
+const generateImage = async(style, promptValue, token = null, image = null, weight = "MEDIUM", save = false, saveSettings = { "name": "", "public": false, "visible": true }, callback) => {
+    if (token == null) {
+        token = await Authentication.signUp();
+        token = token.idToken;
+        save = false;
+    }
     let taskID = await getTaskID(token); // Get the task ID
-    console.log("creating task...");
-    await createTask(token, taskID, promptValue, style, imageId, weight); // Create the task
+    if (weight != "LOW" && weight != "MEDIUM" && weight != "HIGH") {
+        weight = "MEDIUM";
+    }
+    if (image != null) {
+        let imageId = await uploadPhoto(image, token);
+        var task = await createTask(token, taskID, promptValue, style, imageId, weight); // Create the task
+    }
+    else {
+        var task = await createTask(token, taskID, promptValue, style, image, weight); // Create the task
+    }
+    if (callback && typeof callback === 'function') {
+        callback(task);
+    }
+    else {
+        console.log("creating task...");
+    }    
     var status = { "state": "generating" }; // Set the default status to generating
     var result;
     while (status.state == "generating" || status.state == "input" || status.state == "pending") { // While the task is still generating
-        console.log("generating...");
         result = await checkStatus(token, taskID); // Get the latest status
-        await new Promise(resolve => setTimeout(resolve, 1000));
         status.state = result.state; // Set the status to the current state and exit loop
+        if (status.state != "completed" && status.state != "failed") {
+            if (callback && typeof callback === 'function') {
+                callback(result);
+            }
+            else {
+                console.log("generating...");
+            }
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
     }
     if (save) {
-        saveToGallery(token, taskID, saveSettings); // Save the task to the gallery
+        await saveToGallery(token, taskID, saveSettings); // Save the task to the gallery
     }
     return result
 }

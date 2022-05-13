@@ -16,7 +16,7 @@ const WomboDream = require('dream-api');
 
 async function main() {
     let token = await WomboDream.signUp();
-    console.log(await WomboDream.generateImage(token.idToken, 1, "dog"));
+    console.log(await WomboDream.generateImage(1, "dog", token.idToken));
 }
 
 main();
@@ -27,8 +27,7 @@ main();
 async function main() {
     let buffer = fs.readFileSync('image.jpg');
     let token = await WomboDream.signUp("email@email.com", "password", "username");
-    let image = await WomboDream.uploadImage(buffer, token.idToken);
-    console.log(await WomboDream.generateImage(token.idToken, 1, "dog", image, "HIGH"));
+    console.log(await WomboDream.generateImage(1, "dog", token.idToken, buffer, "HIGH"));
 }
 
 main();
@@ -37,18 +36,26 @@ main();
 ## Generate an image, save it, and get the URL to purchase a print
 ```
 async function main() {
-    let token = await WomboDream.signUp();
+    let token = await WomboDream.signIn("email@email.com", "password");
     let taskID = await WomboDream.getTaskID(token);
-    await createTask(token, taskID, promptValue, style, imageId, weight);
-    var status = { "state": "generating" };
-    var result;
-    while (status.state == "generating" || status.state == "input" || status.state == "pending") {
+    let result = await createTask(token, taskID, promptValue, style, imageId, weight);
+    while (result.state == "generating" || result.state == "input" || result.state == "pending") {
         result = await checkStatus(token, taskID);
         await new Promise(resolve => setTimeout(resolve, 1000));
-        status.state = result.state;
     }
-    saveToGallery(token.idToken, taskID, { "name": "My Image", "public": false, "visible": true }); 
+    await saveToGallery(token.idToken, taskID, { "name": "My Image", "public": false, "visible": true }); 
     console.log(await WomboDream.getTaskShopURL(token.idToken, taskID));
+}
+```
+
+## Generate an image, with a callback function
+```
+function printStatus(task) {
+  console.log(task.state);
+}
+
+async function main() {
+     let result = await WomboDream.generateImage(1, "dog", null, null, null, null, null, printStatus));
 }
 
 main();
@@ -64,6 +71,8 @@ async function main() {
 
 main();
 ```
+
+See example.js for much more example code.
 
 # Functions
 <hr>
@@ -82,6 +91,7 @@ main();
 
 `refresh(refreshToken)`
 - Refreshes a user's access token. Returns token object.
+- Works for anonymous and named users.
 - `refreshToken`: `string` Refresh token. 
   - `(await WomboDream.signUp()).refreshToken`
   - `(await WomboDream.signUp('email', 'password', 'username')).refreshToken`
@@ -93,43 +103,27 @@ main();
 
 `getStyles()`
 - Retrieve all available styles. Returns array of style objects.
+- Does not require authentication.
 
 `printStyles()`
 - Print all available styles to console in a formatted table. Returns nothing.
-
-<hr>
-
-## Image Uploading
-
-`uploadPhoto(buffer [, token])`
-- Uploads a photo for later use and returns upload ID (automatically generates upload URL). Returns upload object.
-- `buffer`: `buffer` Buffer of jpg / jpeg image.
-- `token`: `string` (Optional) Access token.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
-
-`getUploadURL([token])`
-- Returns a URL to upload an image for later use (used internally in uploadPhoto()). Returns upload object.
-- `token`: `string` (Optional) Access token.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
+- Does not require authentication.
 
 <hr>
 
 ## Image Generation
 
-`generateImage(token, style, prompt [, image [, weight]] [, save [, saveSettings]])`
+`generateImage(style, prompt [, token] [, imageBuffer [, weight]] [, save [, saveSettings]] [, callback])`
 - Generates an image based on the style, prompt and input image. Returns image object.
-- `token`: `string` Access token.
+- Set any optional parameter to `null` in order to skip that function and use a later parameter.
+- `style`: `int` Style number (from getStyles()).
+- `prompt`: `string` Image prompt. String of up to 100 characters.
+- `token`: `string` (Optional) Access token.
+  - If token is not provided, anonymous token will be generated. Saving will be disabled if token not provided.
   - `(await WomboDream.signUp()).idToken`
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
-- `style`: `int` Style number (from getStyles()).
-- `prompt`: `string` Image prompt. String of up to 100 characters.
-- `image`: `string` (Optional) ID of uploaded image to use.
-  - `await WomboDream.uploadPhoto(buffer)`
+- `imageBuffer`: `buffer` (Optional) Buffer of jpg / jpeg image to use.
 - `weight`: `string` (Optional) Influence of the input image.
     - `LOW`, `MEDIUM` or  `HIGH`
     - Defaults to `MEDIUM`
@@ -142,6 +136,8 @@ main();
     - `publicValue`: `boolean` Whether the image is public.
     - `visibleValue`: `boolean` Whether the name is visible on the image.
     - Defaults to `{ "name": "", "public": false, "visible": true }`
+- `callback`: `function` (Optional) Callback function for intermediate image generation steps.
+  - callback is passed 1 argument, the JSON image object containing the status, task info and intermediate images.
 
 `getTaskID(token)`
 - Returns the ID for a new image generation session (used internally in generateImage()). Returns task id.
@@ -150,7 +146,7 @@ main();
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
 
-`createTask(token, taskID, prompt, style [, image [, weight]])`
+`createTask(token, taskID, prompt, style [, imageId [, weight]])`
 - Creates a new image generation task (used internally in generateImage()). Returns image object.
 - `token`: `string` Access token.
   - `(await WomboDream.signUp()).idToken`
@@ -160,7 +156,7 @@ main();
   - `await WomboDream.getTaskID(token)`
 - `prompt`: `string` Image prompt. String of up to 100 characters.
 - `style`: `int` Style number (from getStyles()).
-- `image`: `string` (Optional) ID of uploaded image to use.
+- `imageId`: `string` (Optional) ID of uploaded image to use.
   - `await WomboDream.uploadPhoto(buffer)`
 - `weight`: `string` (Optional) Influence of the input image.
     - `LOW`, `MEDIUM` or  `HIGH`
@@ -178,6 +174,23 @@ main();
 <hr>
 
 ## Additional Functions
+
+`uploadPhoto(buffer [, token])`
+- Uploads a photo for later use and returns upload ID (used internally in generateImage()). Returns upload id.
+- Works for anonymous and named users. If token is not supplied, anonymous token will be used.
+- `buffer`: `buffer` Buffer of jpg / jpeg image.
+- `token`: `string` (Optional) Access token.
+  - `(await WomboDream.signUp()).idToken`
+  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
+  - `(await WomboDream.signIn('username', 'password)).idToken`
+
+`getUploadURL([token])`
+- Returns a URL to upload an image for later use (used internally in uploadPhoto()). Returns upload object.
+- Works for anonymous and named users. If token is not supplied, anonymous token will be used.
+- `token`: `string` (Optional) Access token.
+  - `(await WomboDream.signUp()).idToken`
+  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
+  - `(await WomboDream.signIn('username', 'password)).idToken`
 
 `getTaskShopURL(token, taskID)`
 - Get URL to purchase print of generated image. Returns URL.
