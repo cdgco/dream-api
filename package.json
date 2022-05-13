@@ -10,6 +10,12 @@
         "type": "git",
         "url": "git+https://github.com/cdgco/dream-api.git"
     },
+    "keywords": [
+		"wombo",
+		"wombo-dream",
+		"api",
+		"dream"
+	],
     "author": "cdgco",
     "license": "MIT",
     "dependencies": {
