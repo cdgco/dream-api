@@ -20,11 +20,24 @@ const WomboDream = require('dream-api');
 ```
 let image = await WomboDream.generateImage(1, "dog");
 ```
+or
+```
+WomboDream.generateImage(1, "dog").then(image => {
+  console.log(image);
+});
+```
 
 ## Generate an image from a text prompt and input image
 ```
 let buffer = fs.readFileSync('image.jpg');
 let image = await WomboDream.generateImage(1, "dog", null, buffer, "LOW");
+```
+or
+```
+let buffer = fs.readFileSync('image.jpg');
+WomboDream.generateImage(1, "dog", null, buffer, "LOW").then(image => {
+  console.log(image);
+});
 ```
 
 ## Generate an image, save it, and get the URL to purchase a print
@@ -33,17 +46,43 @@ let token = await WomboDream.signUp("email@email.com", "password", "username");
 let image = await WomboDream.generateImage(1, "dog", token.idToken, null, null, true);
 let purchaseURL = await WomboDream.getTaskShopURL(token.idToken, image.id);
 ```
+or
+```
+WomboDream.signUp("email@email.com", "password", "username").then(token => {
+  WomboDream.generateImage(1, "dog", token.idToken, null, null, true).then(image => {
+    WomboDream.getTaskShopURL(token.idToken, image.id).then(purchaseURL => {
+      console.log(purchaseURL);
+    });
+  });
+});
+```
 
 ## Generate an image, with a callback function
 ```
 let image = await WomboDream.generateImage(1, "dog", null, null, null, null, null, console.log));
 ```
+or
+```
+WomboDream.generateImage(1, "dog", null, null, null, null, null, console.log).then(image => {
+  console.log(image);
+});
+```
 
 ## Refresh token and print user gallery
 ```
 let token = await WomboDream.signIn("email@email.com", "password");
-let token = await WomboDream.refreshToken(token.refreshToken);
+token = await WomboDream.refreshToken(token.refreshToken);
 let gallery = await WomboDream.getGallery(token.idToken));
+```
+or
+```
+WomboDream.signIn("email@email.com", "password").then(token => {
+  WomboDream.refreshToken(token.refreshToken).then(refresh => {
+    WomboDream.getGallery(refresh.idToken).then(gallery => {
+      console.log(gallery);
+    });
+  });
+});
 ```
 
 See examples/await.js and examples/promise.js for much more example code.
@@ -87,7 +126,7 @@ See examples/await.js and examples/promise.js for much more example code.
 
 ## Image Generation
 
-`generateImage(style, prompt [, token] [, imageBuffer [, weight]] [, save [, saveSettings]] [, callback])`
+`generateImage(style, prompt [, token] [, imageBuffer [, weight]] [, save [, saveSettings]] [, callback] [, interval], [, frequency])`
 - Generates an image based on the style, prompt and input image. Returns image object.
 - Set any optional parameter to `null` in order to skip that function and use a later parameter.
 - `style`: `int` Style number (from getStyles()).
@@ -112,6 +151,10 @@ See examples/await.js and examples/promise.js for much more example code.
     - Defaults to `{ "name": "", "public": false, "visible": true }`
 - `callback`: `function` (Optional) Callback function for intermediate image generation steps.
   - callback is passed 1 argument, the JSON image object containing the status, task info and intermediate images.
+- `interval`: `int` (Optional) Milliseconds to wait between status checks and callback function.
+  - Defaults to `1000`
+- `frequency`: `int` (Optional) Frequency of the intermediate image generation.
+  - Defaults to `10`
 
 `getTaskID(token)`
 - Returns the ID for a new image generation session (used internally in generateImage()). Returns task id.
@@ -120,7 +163,7 @@ See examples/await.js and examples/promise.js for much more example code.
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
 
-`createTask(token, taskID, prompt, style [, imageId [, weight]])`
+`createTask(token, taskID, prompt, style [, imageId [, weight]] [, frequency])`
 - Creates a new image generation task (used internally in generateImage()). Returns image object.
 - `token`: `string` Access token.
   - `(await WomboDream.signUp()).idToken`
@@ -135,15 +178,20 @@ See examples/await.js and examples/promise.js for much more example code.
 - `weight`: `string` (Optional) Influence of the input image.
     - `LOW`, `MEDIUM` or  `HIGH`
     - Defaults to `MEDIUM`
+- `frequency`: `int` (Optional) Frequency of the intermediate image generation.
+  - Defaults to `10`
 
-`checkStatus(token, taskID)`
+`checkStatus(token, taskID [, interval] [, callback])`
 - Check status of image generation task (used internally in generateImage()). Returns image object.
+- If loop is unset or null, will check status once. If set to true, will check status every `loop` ms until task is complete.
 - `token`: `string` Access token.
   - `(await WomboDream.signUp()).idToken`
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
 - `taskID`: `string` ID of the task.
   - `await WomboDream.getTaskID(token)`
+- `interval`: `int` (Optional) Milliseconds to wait between status checks.
+- `callback`: `function` (Optional) Callback function for intermediate image generation steps.
 
 <hr>
 

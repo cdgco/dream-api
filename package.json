@@ -1,6 +1,6 @@
 {
     "name": "dream-api",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "description": "API wrapper for Wombo Dream",
     "main": "dist/app.js",
     "scripts": {
@@ -11,11 +11,11 @@
         "url": "git+https://github.com/cdgco/dream-api.git"
     },
     "keywords": [
-		"wombo",
-		"wombo-dream",
-		"api",
-		"dream"
-	],
+        "wombo",
+        "wombo-dream",
+        "api",
+        "dream"
+    ],
     "author": "cdgco",
     "license": "MIT",
     "dependencies": {
