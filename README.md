@@ -85,7 +85,7 @@ WomboDream.signIn("email@email.com", "password").then(token => {
 });
 ```
 
-See examples/await.js and examples/promise.js for much more example code.
+See [examples/await.js](https://github.com/cdgco/dream-api/blob/main/examples/await.js) and [examples/promise.js](https://github.com/cdgco/dream-api/blob/main/examples/promise.js) for much more example code.
 
 # Functions
 <hr>
