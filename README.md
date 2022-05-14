@@ -6,73 +6,47 @@ Promise based NodeJS API for Wombo Dream.
 
 # Installation
 
-Run `npm i dream-api`
+Add `dream-api` to your project:
+```
+npm install dream-api
+```
+```
+const WomboDream = require('dream-api');
+```
 
 # Usage
 
 ## Generate an image from a text prompt
 ```
-const WomboDream = require('dream-api');
-
-async function main() {
-    let token = await WomboDream.signUp();
-    console.log(await WomboDream.generateImage(1, "dog", token.idToken));
-}
-
-main();
+let image = await WomboDream.generateImage(1, "dog");
 ```
 
 ## Generate an image from a text prompt and input image
 ```
-async function main() {
-    let buffer = fs.readFileSync('image.jpg');
-    let token = await WomboDream.signUp("email@email.com", "password", "username");
-    console.log(await WomboDream.generateImage(1, "dog", token.idToken, buffer, "HIGH"));
-}
-
-main();
+let buffer = fs.readFileSync('image.jpg');
+let image = await WomboDream.generateImage(1, "dog", null, buffer, "LOW");
 ```
 
 ## Generate an image, save it, and get the URL to purchase a print
 ```
-async function main() {
-    let token = await WomboDream.signIn("email@email.com", "password");
-    let taskID = await WomboDream.getTaskID(token);
-    let result = await createTask(token, taskID, promptValue, style, imageId, weight);
-    while (result.state == "generating" || result.state == "input" || result.state == "pending") {
-        result = await checkStatus(token, taskID);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    await saveToGallery(token.idToken, taskID, { "name": "My Image", "public": false, "visible": true }); 
-    console.log(await WomboDream.getTaskShopURL(token.idToken, taskID));
-}
+let token = await WomboDream.signUp("email@email.com", "password", "username");
+let image = await WomboDream.generateImage(1, "dog", token.idToken, null, null, true);
+let purchaseURL = await WomboDream.getTaskShopURL(token.idToken, image.id);
 ```
 
 ## Generate an image, with a callback function
 ```
-function printStatus(task) {
-  console.log(task.state);
-}
-
-async function main() {
-     let result = await WomboDream.generateImage(1, "dog", null, null, null, null, null, printStatus));
-}
-
-main();
+let image = await WomboDream.generateImage(1, "dog", null, null, null, null, null, console.log));
 ```
 
 ## Refresh token and print user gallery
 ```
-async function main() {
-    let token = await WomboDream.signIn("email@email.com", "password");
-    let token = await WomboDream.refreshToken(token.refreshToken);
-    console.log(await WomboDream.getGallery(token.idToken));
-}
-
-main();
+let token = await WomboDream.signIn("email@email.com", "password");
+let token = await WomboDream.refreshToken(token.refreshToken);
+let gallery = await WomboDream.getGallery(token.idToken));
 ```
 
-See example.js for much more example code.
+See examples/await.js and examples/promise.js for much more example code.
 
 # Functions
 <hr>

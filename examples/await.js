@@ -1,5 +1,6 @@
 const WomboDream = require('../dist/app');
 const fs = require('fs');
+const axios = require('axios');
 
 async function main() {
     // Create a token
@@ -9,7 +10,7 @@ async function main() {
     let token4 = await WomboDream.refresh(token1.refreshToken);
 
     // Get the styles
-    await WomboDream.printStyles(styles);
+    await WomboDream.printStyles();
     let styles = await WomboDream.getStyles();
 
     // Upload an image manually
