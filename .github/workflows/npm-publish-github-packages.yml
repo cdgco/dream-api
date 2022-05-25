@@ -31,10 +31,8 @@ jobs:
           registry-url: https://npm.pkg.github.com/
           scope: '@cdgco'
       - run: npm ci
+      - run: npm init -y --scope ${{ github.repository_owner }}
       - run: echo registry=https://npm.pkg.github.com/@cdgco >> .npmrc
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          
-          
-          
