@@ -2,6 +2,12 @@ const axios = require('axios').default;
 const { printTable } = require('console-table-printer');
 const Authentication = require('./auth');
 
+const API_URL = "https://paint.api.wombo.ai/api/tasks/"
+const GALLERY_URL = "https://app.wombo.art/api/gallery/"
+const STYLE_URL = "https://app.wombo.art/api/style/"
+const SHOP_URL = "https://app.wombo.art/api/shop/"
+const MEDIA_URL = "https://mediastore.api.wombo.ai/io/"
+
 function defineHeaders(token, type = "text/plain;charset=UTF-8") {
     return {
         'Origin': 'https://app.wombo.art',
@@ -14,7 +20,7 @@ function defineHeaders(token, type = "text/plain;charset=UTF-8") {
 
 const getStyles = () => {
     return new Promise(function(resolve, reject) {
-        axios.get('https://app.wombo.art/api/styles')
+        axios.get(STYLE_URL)
             .then(function(response) {
                 resolve(response.data);
             })
@@ -38,7 +44,7 @@ const printStyles = async() => {
 
 const getTaskID = (token) => {
     return new Promise(function(resolve, reject) {
-        axios.post('https://app.wombo.art/api/tasks', '{ "premium": false }', {
+        axios.post(API_URL, '{ "premium": false }', {
                 headers: defineHeaders(token)
             })
             .then(function(response) {
@@ -52,7 +58,7 @@ const getTaskID = (token) => {
 
 const getTaskShopURL = (token, taskID) => {
     return new Promise(function(resolve, reject) {
-        axios.get('https://app.wombo.art/api/shop/' + taskID, {
+        axios.get(SHOP_URL + taskID, {
                 headers: defineHeaders(token)
             })
             .then(function(response) {
@@ -70,7 +76,7 @@ const getUploadURL = async(token = null) => {
         token = token.idToken;
     }
     return new Promise(function(resolve, reject) {
-        axios.post('https://mediastore.api.wombo.ai/io/', {
+        axios.post(MEDIA_URL, {
                 "media_expiry": "HOURS_72",
                 "media_suffix": "jpeg",
                 "num_uploads": 1
@@ -128,7 +134,7 @@ const createTask = (token, taskID, prompt, style, imageId = null, weight = "MEDI
     }
 
     return new Promise(function(resolve, reject) {
-        axios.put('https://app.wombo.art/api/tasks/' + taskID, jsonData, {
+        axios.put(API_URL + taskID, jsonData, {
                 headers: defineHeaders(token)
             })
             .then(function(response) {
@@ -144,7 +150,7 @@ const createTask = (token, taskID, prompt, style, imageId = null, weight = "MEDI
 const checkStatus = async(token, taskID, interval = null, callback = null) => {
     return new Promise(async function(resolve, reject) {
         if (interval == null) {
-            axios.get('https://app.wombo.art/api/tasks/' + taskID, {
+            axios.get(API_URL + taskID, {
                     headers: defineHeaders(token)
                 })
                 .then(function(response) {
@@ -160,7 +166,7 @@ const checkStatus = async(token, taskID, interval = null, callback = null) => {
             if (typeof interval !== 'number') {
                 interval = 1000;
             }
-            axios.get('https://app.wombo.art/api/tasks/' + taskID, {
+            axios.get(API_URL + taskID, {
                     headers: defineHeaders(token)
                 })
                 .then(async function(response) {
@@ -170,7 +176,7 @@ const checkStatus = async(token, taskID, interval = null, callback = null) => {
                     }
                     while (result.state != "completed" && result.state != "failed") { // While the task is still generating
                         try {
-                            result = (await axios.get('https://app.wombo.art/api/tasks/' + taskID, { headers: defineHeaders(token) })).data;
+                            result = (await axios.get(API_URL + taskID, { headers: defineHeaders(token) })).data;
                         } catch (error) {
                             resolve(error);
                         }
@@ -196,7 +202,7 @@ const saveToGallery = async(token, taskID, settings = { "name": "", "public": fa
         settings = { "name": "", "public": false, "visible": true };
     }
     return new Promise(function(resolve, reject) {
-        axios.post('https://app.wombo.art/api/gallery/', {
+        axios.post(GALLERY_URL, {
                 "task_id": taskID,
                 "name": settings.name,
                 "is_public": settings.public,
@@ -215,7 +221,7 @@ const saveToGallery = async(token, taskID, settings = { "name": "", "public": fa
 
 const getGallery = (token) => {
     return new Promise(function(resolve, reject) {
-        axios.get('https://app.wombo.art/api/gallery/', {
+        axios.get(GALLERY_URL, {
                 headers: defineHeaders(token)
             })
             .then(function(response) {
