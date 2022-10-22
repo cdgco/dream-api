@@ -2,7 +2,7 @@
 
 Promise based NodeJS API for Wombo Dream. 
 
-![](https://img.shields.io/circleci/build/github/cdgco/dream-api?style=for-the-badge) ![](https://img.shields.io/npm/dt/dream-api?style=for-the-badge) ![](https://img.shields.io/npm/v/dream-api?style=for-the-badge) ![](https://img.shields.io/github/repo-size/cdgco/dream-api?style=for-the-badge)
+![](https://img.shields.io/circleci/build/github/cdgco/dream-api/main?label=test&style=for-the-badge) ![](https://img.shields.io/npm/dt/dream-api?style=for-the-badge) ![](https://img.shields.io/npm/v/dream-api?style=for-the-badge) ![](https://img.shields.io/github/repo-size/cdgco/dream-api?style=for-the-badge)
 # Installation
 
 Add `dream-api` to your project:
@@ -278,7 +278,7 @@ Tested functions include:
 * Trading card retrieval
 * Purchase URL retrievel
 
-Tests are run through CircleCI weekly, and on every commit using `.circleci/config.yml`. If any test fails, the script will throw exit code 1, rather than exit code 0, and will set the build status to failed, indicating that at least one API function is broken. To see test results, visit the [CircleCI testing page](https://app.circleci.com/pipelines/github/cdgco/dream-api).
+Tests are run through CircleCI weekly, and on every commit using `.circleci/config.yml`. If any test fails, the script will throw exit code 1, rather than exit code 0, and will set the test status to failed, indicating that at least one API function is broken. To see test results, visit the [CircleCI testing page](https://app.circleci.com/pipelines/github/cdgco/dream-api).
 
 ## Publishing
 
