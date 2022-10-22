@@ -223,6 +223,15 @@ See [examples/await.js](https://github.com/cdgco/dream-api/blob/main/examples/aw
 - `taskID`: `string` ID of the task.
   - `await WomboDream.getTaskID(token)`
 
+`getTradingCardURL(token, taskID)`
+- Get URL of trading card of a generated image. Returns URL.
+- `token`: `string` Access token.
+  - `(await WomboDream.signUp()).idToken`
+  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
+  - `(await WomboDream.signIn('username', 'password)).idToken`
+- `taskID`: `string` ID of the task.
+  - `await WomboDream.getTaskID(token)`
+
 `saveToGallery(token, taskID [, saveSettings])`
 - Save image to user account (used internally in generateImage()). Returns gallery item.
 - `token`: `string` Access token.

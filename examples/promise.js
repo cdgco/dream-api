@@ -151,7 +151,16 @@ WomboDream.signIn("test@test.com", "test").then((token) => {
     });
 });
 
-// Get purchase URL from auto - generated image
+// Get trading card URL from auto generated image
+WomboDream.signUp().then((token) => {
+    WomboDream.generateImage(1, "dog", token.idToken).then((image) => {
+        WomboDream.getTradingCardURL(token.idToken, image.id).then((url) => {
+            console.log(url);
+        });
+    });
+});
+
+// Get purchase URL from auto generated image
 WomboDream.signUp().then((token) => {
     WomboDream.generateImage(1, "dog", token.idToken).then((image) => {
         WomboDream.getTaskShopURL(token.idToken, image.id).then((url) => {

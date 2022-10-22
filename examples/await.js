@@ -96,11 +96,16 @@ async function main() {
     // Get user gallery
     let gallery = await WomboDream.getGallery(token3.idToken);
 
+    // Get trading card URL from auto-generated image
+    let cardURL1 = await WomboDream.getTradingCardURL(token1.idToken, image1.id);
+
     // Get purchase URL from auto-generated image
     let purchaseURL1 = await WomboDream.getTaskShopURL(token3.idToken, image10.id);
 
     // Get purchase URL from manually generated image
     let purchaseURL2 = await WomboDream.getTaskShopURL(token4.idToken, taskID);
+
+
 
 }
 

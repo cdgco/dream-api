@@ -6,6 +6,8 @@ const API_URL = "https://paint.api.wombo.ai/api/tasks/"
 const GALLERY_URL = "https://paint.api.wombo.ai/api/gallery/"
 const STYLE_URL = "https://paint.api.wombo.ai/api/styles/"
 const SHOP_URL = "https://paint.api.wombo.ai/api/shop/"
+const NFT_URL = "https://paint.api.wombo.ai/api/nft/"
+const TRADING_URL = "https://paint.api.wombo.ai/api/tradingcard/"
 const MEDIA_URL = "https://mediastore.api.wombo.ai/io/"
 
 function defineHeaders(token, type = "text/plain;charset=UTF-8") {
@@ -60,6 +62,20 @@ const getTaskShopURL = (token, taskID) => {
     return new Promise(function(resolve, reject) {
         axios.get(SHOP_URL + taskID, {
                 headers: defineHeaders(token)
+            })
+            .then(function(response) {
+                resolve(response.data);
+            })
+            .catch(function(error) {
+                resolve(error);
+            });
+    });
+}
+
+const getTradingCardURL = (token, taskID) => {
+    return new Promise(function(resolve, reject) {
+        axios.post(TRADING_URL + taskID, '{}', {
+                headers: defineHeaders(token, "application/json")
             })
             .then(function(response) {
                 resolve(response.data);
@@ -276,5 +292,6 @@ exports.createTask = createTask;
 exports.checkStatus = checkStatus;
 exports.generateImage = generateImage;
 exports.getTaskShopURL = getTaskShopURL;
+exports.getTradingCardURL = getTradingCardURL;
 exports.saveToGallery = saveToGallery;
 exports.getGallery = getGallery;

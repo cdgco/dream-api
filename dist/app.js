@@ -13,5 +13,6 @@ exports.getTaskID = Dream.getTaskID;
 exports.createTask = Dream.createTask;
 exports.checkStatus = Dream.checkStatus;
 exports.getTaskShopURL = Dream.getTaskShopURL;
+exports.getTradingCardURL = Dream.getTradingCardURL;
 exports.saveToGallery = Dream.saveToGallery;
 exports.getGallery = Dream.getGallery;
