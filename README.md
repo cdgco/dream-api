@@ -278,7 +278,7 @@ Tested functions include:
 * Trading card retrieval
 * Purchase URL retrievel
 
-Tests are run through CircleCI weekly, and on every release using `.circleci/config.yml`. If any test fails, the script will throw exit code 1, rather than exit code 0, and will set the build status to failed, indicating that at least one API function is broken. To see test results, visit the [CircleCI testing page](https://app.circleci.com/pipelines/github/cdgco/dream-api).
+Tests are run through CircleCI weekly, and on every commit using `.circleci/config.yml`. If any test fails, the script will throw exit code 1, rather than exit code 0, and will set the build status to failed, indicating that at least one API function is broken. To see test results, visit the [CircleCI testing page](https://app.circleci.com/pipelines/github/cdgco/dream-api).
 
 ## Publishing
 
