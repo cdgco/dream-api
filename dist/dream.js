@@ -3,9 +3,9 @@ const { printTable } = require('console-table-printer');
 const Authentication = require('./auth');
 
 const API_URL = "https://paint.api.wombo.ai/api/tasks/"
-const GALLERY_URL = "https://app.wombo.art/api/gallery/"
-const STYLE_URL = "https://app.wombo.art/api/style/"
-const SHOP_URL = "https://app.wombo.art/api/shop/"
+const GALLERY_URL = "https://paint.api.wombo.ai/api/gallery/"
+const STYLE_URL = "https://paint.api.wombo.ai/api/styles/"
+const SHOP_URL = "https://paint.api.wombo.ai/api/shop/"
 const MEDIA_URL = "https://mediastore.api.wombo.ai/io/"
 
 function defineHeaders(token, type = "text/plain;charset=UTF-8") {
