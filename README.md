@@ -254,3 +254,32 @@ See [examples/await.js](https://github.com/cdgco/dream-api/blob/main/examples/aw
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
   - token must be provided for a non-guest user account.
+  
+# Development & Testing
+
+## API Structure
+
+Wombo is a firebase app and authentication is handled by Google Firebase Authentication with guest and username / password authentication. Some functions are not available for guest accounts. All authentication functions are handled in `dist/auth.js`.
+
+All AI related functions are handled in `dist/dream.js`.
+
+dream-api is a CommonJS module with public exports defined in `dist/app.js`.
+
+## Testing
+
+Tests for some basic functions are included in `tests/test.js`, runnable through `npm test`. Not all functions are tested as they require a non-guest account to run, or have duplicate functionality of others. The primary purpose of testing is to ensure that the internal Wombo API URLs are still valid.
+
+Tested functions include:
+* User sign-up / id token generation
+* Refresh token generation
+* Style retrieval
+* Prompt based generation
+* Image based generation
+* Trading card retrieval
+* Purchase URL retrievel
+
+Tests are run through CircleCI weekly, and on every release using `.circleci/config.yml`. If any test fails, the script will throw exit code 1, rather than exit code 0, and will set the build status to failed, indicating that at least one API function is broken. To see test results, visit the [CircleCI testing page](https://app.circleci.com/pipelines/github/cdgco/dream-api).
+
+## Publishing
+
+Release publishing is automated through GitHub actions. On every release, the package is automatically published to both NPM and GitHub Packages, using the workflows defined in `.github/workflows`.
