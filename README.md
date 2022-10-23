@@ -267,7 +267,7 @@ dream-api is a CommonJS module with public exports defined in `dist/app.js`.
 
 ## Testing
 
-Tests for some basic functions are included in `tests/test.js`, runnable through `npm test`. Not all functions are tested as they require a non-guest account to run, or have duplicate functionality of others. The primary purpose of testing is to ensure that the internal Wombo API URLs are still valid.
+Mocha tests for some basic functions are included in `test/test.js`, runnable through `npm test`. Not all functions are tested as they require a non-guest account to run, or have duplicate functionality of others. The primary purpose of testing is to ensure that the internal Wombo API URLs are still valid.
 
 Tested functions include:
 * User sign-up / id token generation
