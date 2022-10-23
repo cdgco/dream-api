@@ -4,7 +4,7 @@
     "description": "API wrapper for Wombo Dream",
     "main": "dist/app.js",
     "scripts": {
-        "test": "node tests/test.js"
+        "test": "mocha --reporter=xunit --reporter-option output=test-results.xml"
     },
     "repository": {
         "type": "git",
@@ -25,5 +25,10 @@
     "bugs": {
         "url": "https://github.com/cdgco/dream-api/issues"
     },
-    "homepage": "https://cdgco.github.io/dream-api/"
+    "homepage": "https://cdgco.github.io/dream-api/",
+    "devDependencies": {
+        "chai": "^4.3.6",
+        "mocha": "^10.1.0",
+        "mocha-junit-reporter": "^2.1.0"
+    }
 }
