@@ -4,7 +4,7 @@
     "description": "API wrapper for Wombo Dream",
     "main": "dist/app.js",
     "scripts": {
-        "test": "mocha --reporter=xunit --reporter-option output=test-results.xml"
+        "test": "mocha --reporter=xunit --reporter-option output=test-results/result.xml"
     },
     "repository": {
         "type": "git",
