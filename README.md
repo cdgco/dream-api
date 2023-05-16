@@ -179,7 +179,7 @@ See [examples/await.js](https://github.com/cdgco/dream-api/blob/main/examples/aw
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
 - `taskID`: `string` ID of the task.
-  - `await WomboDream.getTaskID(token)`
+  - `await WomboDream.createTask(...).id`
 - `interval`: `int` (Optional) Milliseconds to wait between status checks.
 - `callback`: `function` (Optional) Callback function for intermediate image generation steps.
 
@@ -211,7 +211,7 @@ See [examples/await.js](https://github.com/cdgco/dream-api/blob/main/examples/aw
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
 - `taskID`: `string` ID of the task.
-  - `await WomboDream.getTaskID(token)`
+  - `(await WomboDream.createTask(...)).id`
 
 `getTradingCardURL(token, taskID)`
 - Get URL of trading card of a generated image. Returns URL.
@@ -220,7 +220,7 @@ See [examples/await.js](https://github.com/cdgco/dream-api/blob/main/examples/aw
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
 - `taskID`: `string` ID of the task.
-  - `await WomboDream.getTaskID(token)`
+  - `(await WomboDream.createTask(...)).id`
 
 `saveToGallery(token, taskID [, saveSettings])`
 - Save image to user account (used internally in generateImage()). Returns gallery item.
@@ -230,7 +230,7 @@ See [examples/await.js](https://github.com/cdgco/dream-api/blob/main/examples/aw
   - `(await WomboDream.signIn('username', 'password)).idToken`
   - token must be provided for a user account. Save will fail if username not set or token is for anonymous account.
 - `taskID`: `string` ID of the task.
-  - `await WomboDream.getTaskID(token)`
+  - `(await WomboDream.createTask(...)).id`
 - `saveSettings`: `object` (Optional) JSON object with settings for saving the image.
   - `{ "name": nameValue, "public": publicValue, "visible": visibleValue }`
     - `nameValue`: `string` Name of the image.
