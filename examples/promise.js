@@ -129,11 +129,9 @@ WomboDream.signUp("test@test.com", "test", "test").then((token) => {
 // Generate image manually from prompt and input image
 WomboDream.signUp().then((token) => {
     WomboDream.uploadPhoto(buffer, token.idToken).then((upload) => {
-        WomboDream.getTaskID(token.idToken).then((taskId) => {
-            WomboDream.createTask(token.idToken, taskId, "dog", 1, upload).then((start) => {
-                WomboDream.checkStatus(token.idToken, taskId, 1000).then((final) => {
-                    console.log(final);
-                });
+        WomboDream.createTask(token.idToken, "dog", 1, upload).then((start) => {
+            WomboDream.checkStatus(token.idToken, start.id, 1000).then((final) => {
+                console.log(final);
             });
         });
     });
@@ -171,13 +169,11 @@ WomboDream.signUp().then((token) => {
 
 // Get purchase URL from manually generated image
 WomboDream.signUp().then((token) => {
-    WomboDream.getTaskID(token.idToken).then((taskId) => {
-        WomboDream.createTask(token.idToken, taskId, "dog", 1).then((start) => {
-            WomboDream.checkStatus(token.idToken, taskId, 1000).then((final) => {
-                console.log(final);
-                WomboDream.getTaskShopURL(token.idToken, final.id).then((url) => {
-                    console.log(url);
-                });
+    WomboDream.createTask(token.idToken, "dog", 1).then((start) => {
+        WomboDream.checkStatus(token.idToken, start.id, 1000).then((final) => {
+            console.log(final);
+            WomboDream.getTaskShopURL(token.idToken, final.id).then((url) => {
+                console.log(url);
             });
         });
     });

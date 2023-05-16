@@ -2,7 +2,7 @@ const axios = require('axios').default;
 const { printTable } = require('console-table-printer');
 const Authentication = require('./auth');
 
-const API_URL = "https://paint.api.wombo.ai/api/tasks/"
+const API_URL = "https://paint.api.wombo.ai/api/v2/tasks/"
 const GALLERY_URL = "https://paint.api.wombo.ai/api/gallery/"
 const STYLE_URL = "https://paint.api.wombo.ai/api/styles/"
 const SHOP_URL = "https://paint.api.wombo.ai/api/shop/"
@@ -12,8 +12,8 @@ const MEDIA_URL = "https://mediastore.api.wombo.ai/io/"
 
 function defineHeaders(token, type = "text/plain;charset=UTF-8") {
     return {
-        'Origin': 'https://app.wombo.art',
-        'Referer': 'https://app.wombo.art/',
+        'Origin': 'https://dream.ai',
+        'Referer': 'https://dream.ai/',
         'Authorization': 'bearer ' + token,
         'Content-Type': type,
         'service': 'Dream'
@@ -42,20 +42,6 @@ const printStyles = async() => {
     });
     styles.sort((a, b) => (a.id > b.id) ? 1 : -1)
     printTable(styles);
-}
-
-const getTaskID = (token) => {
-    return new Promise(function(resolve, reject) {
-        axios.post(API_URL, '{ "premium": false }', {
-                headers: defineHeaders(token)
-            })
-            .then(function(response) {
-                resolve(response.data.id);
-            })
-            .catch(function(error) {
-                resolve(error);
-            });
-    });
 }
 
 const getTaskShopURL = (token, taskID) => {
@@ -131,11 +117,12 @@ const uploadPhoto = async(imageBuffer, token = null) => {
 }
 
 // Using the new task ID, supply a prompt and start the image generation process.
-const createTask = (token, taskID, prompt, style, imageId = null, weight = "MEDIUM", freq = 10) => {
+const createTask = (token, prompt, style, imageId = null, weight = "MEDIUM", freq = 10) => {
     if (weight != "LOW" && weight != "MEDIUM" && weight != "HIGH") {
         weight = "MEDIUM";
     }
     var jsonData = {
+        "is_premium": false,
         "input_spec": {
             "prompt": prompt,
             "style": style,
@@ -150,7 +137,7 @@ const createTask = (token, taskID, prompt, style, imageId = null, weight = "MEDI
     }
 
     return new Promise(function(resolve, reject) {
-        axios.put(API_URL + taskID, jsonData, {
+        axios.post(API_URL, jsonData, {
                 headers: defineHeaders(token)
             })
             .then(function(response) {
@@ -255,16 +242,16 @@ const generateImage = async(style, promptValue, token = null, image = null, weig
         token = token.idToken;
         save = false;
     }
-    let taskID = await getTaskID(token); // Get the task ID
     if (weight != "LOW" && weight != "MEDIUM" && weight != "HIGH") {
         weight = "MEDIUM";
     }
     if (image != null) {
         let imageId = await uploadPhoto(image, token);
-        var result = await createTask(token, taskID, promptValue, style, imageId, weight, freq); // Create the task
+        var result = await createTask(token, promptValue, style, imageId, weight, freq); // Create the task
     } else {
-        var result = await createTask(token, taskID, promptValue, style, image, weight, freq); // Create the task
+        var result = await createTask(token, promptValue, style, image, weight, freq); // Create the task
     }
+    let taskID = result.id;
     if (callback && typeof callback === 'function') {
         callback(result);
     } else {
@@ -285,7 +272,6 @@ const generateImage = async(style, promptValue, token = null, image = null, weig
 
 exports.getStyles = getStyles;
 exports.printStyles = printStyles;
-exports.getTaskID = getTaskID;
 exports.getUploadURL = getUploadURL;
 exports.uploadPhoto = uploadPhoto;
 exports.createTask = createTask;

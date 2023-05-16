@@ -85,8 +85,8 @@ async function main() {
     let image10 = await WomboDream.generateImage(1, "dog", token3.idToken, null, null, true, null, console.log);
 
     // Generate image manually from prompt and input image
-    let taskID = await WomboDream.getTaskID(token1.idToken);
     let result = await WomboDream.createTask(token1.idToken, taskID, "dog", 1, upload2);
+    let taskID = result.id;
     result = await WomboDream.checkStatus(token1.idToken, taskID, 1000);
 
     ////////////////////////////////

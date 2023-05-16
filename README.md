@@ -155,21 +155,12 @@ See [examples/await.js](https://github.com/cdgco/dream-api/blob/main/examples/aw
 - `frequency`: `int` (Optional) Frequency of the intermediate image generation.
   - Defaults to `10`
 
-`getTaskID(token)`
-- Returns the ID for a new image generation session (used internally in generateImage()). Returns task id.
-- `token`: `string` Access token.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
-
-`createTask(token, taskID, prompt, style [, imageId [, weight]] [, frequency])`
+`createTask(token, prompt, style [, imageId [, weight]] [, frequency])`
 - Creates a new image generation task (used internally in generateImage()). Returns image object.
 - `token`: `string` Access token.
   - `(await WomboDream.signUp()).idToken`
   - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
   - `(await WomboDream.signIn('username', 'password)).idToken`
-- `taskID`: `string` ID of the task.
-  - `await WomboDream.getTaskID(token)`
 - `prompt`: `string` Image prompt. String of up to 100 characters.
 - `style`: `int` Style number (from getStyles()).
 - `imageId`: `string` (Optional) ID of uploaded image to use.
