@@ -1,5 +1,7 @@
 # Wombo Dream API
 
+> **Warning**: **Third party API access through this package has been blocked by Wombo.** Updates coming soon: https://github.com/cdgco/dream-api/issues/8#issuecomment-1599456105
+
 Promise based NodeJS API for Wombo Dream. 
 
 ![](https://img.shields.io/circleci/build/github/cdgco/dream-api/main?label=test&style=for-the-badge) ![](https://img.shields.io/npm/dt/dream-api?style=for-the-badge) ![](https://img.shields.io/npm/v/dream-api?style=for-the-badge) ![](https://img.shields.io/github/repo-size/cdgco/dream-api?style=for-the-badge)
