@@ -19,14 +19,14 @@ describe('dream-api tests', async function() {
     });
     it('generateImage() (prompt only) responds with image object', async function() {
         console.log("Running Test 2");
-        this.image = await WomboDream.generateImage(1, "dog", this.token, null, "MEDIUM", null, null);
+        this.image = await WomboDream.generateImage(1, "dog", this.token, null, "MEDIUM", 256, 256);
         this.image.should.have.property('result');
         console.log(this.image)
         console.log("Finished Test 2");
     });
     it('generateImage() (prompt + upload) responds with image object', async function() {
         console.log("Running Test 3");
-        this.image = await WomboDream.generateImage(1, "dog", this.token,'./test/test.jpg', "MEDIUM", null, null);
+        this.image = await WomboDream.generateImage(1, "dog", this.token,'./test/test.jpg', "MEDIUM", 256, 256);
         this.image.should.have.property('result');
         console.log(this.image)
         console.log("Finished Test 3");
