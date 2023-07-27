@@ -1,6 +1,5 @@
-# Wombo Dream API
-
-> **Note** : Dream API now uses the official [Wombo Dream API](https://api.dream.ai/) and requires an API key. Endpoints for gallery, trading card, and shop are no longer supported. See [changelog](https://github.com/cdgco/dream-api/releases) for more details.
+> [!IMPORTANT]
+> Dream API now uses the official [Wombo Dream API](https://api.dream.ai/) and requires an API key. Endpoints for gallery, trading card, and shop are no longer supported. See [changelog](https://github.com/cdgco/dream-api/releases) for more details.
 
 Promise based NodeJS API for Wombo Dream. 
 
