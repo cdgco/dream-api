@@ -1,14 +1,8 @@
 const axios = require('axios').default;
 const { printTable } = require('console-table-printer');
-const Authentication = require('./auth');
 
-const API_URL = "https://paint.api.wombo.ai/api/v2/tasks/"
-const GALLERY_URL = "https://paint.api.wombo.ai/api/gallery/"
-const STYLE_URL = "https://paint.api.wombo.ai/api/styles/"
-const SHOP_URL = "https://paint.api.wombo.ai/api/shop/"
-const NFT_URL = "https://paint.api.wombo.ai/api/nft/"
-const TRADING_URL = "https://paint.api.wombo.ai/api/tradingcard/"
-const MEDIA_URL = "https://mediastore.api.wombo.ai/io/"
+const API_URL = "https://api.luan.tools/api/tasks/"
+const STYLE_URL = "https://api.luan.tools/api/styles/"
 
 function defineHeaders(token, type = "text/plain;charset=UTF-8") {
     return {
@@ -27,7 +21,7 @@ const getStyles = () => {
                 resolve(response.data);
             })
             .catch(function(error) {
-                resolve(error);
+                reject(error);
             });
     });
 }
@@ -44,107 +38,87 @@ const printStyles = async() => {
     printTable(styles);
 }
 
-const getTaskShopURL = (token, taskID) => {
-    return new Promise(function(resolve, reject) {
-        axios.get(SHOP_URL + taskID, {
-                headers: defineHeaders(token)
-            })
-            .then(function(response) {
-                resolve(response.data);
-            })
-            .catch(function(error) {
-                resolve(error);
-            });
-    });
-}
+// Create a new task ID and get upload URL if specified
+const createTaskID = (token, image = false) => {
+    image = image ? true : false;
 
-const getTradingCardURL = (token, taskID) => {
+    var jsonData = {    
+        "use_target_image": image
+    };
+
     return new Promise(function(resolve, reject) {
-        axios.post(TRADING_URL + taskID, '{}', {
+        axios.post(API_URL, jsonData, {
                 headers: defineHeaders(token, "application/json")
             })
             .then(function(response) {
                 resolve(response.data);
             })
             .catch(function(error) {
-                resolve(error);
+                reject(error.response.data);
             });
     });
 }
 
-const getUploadURL = async(token = null) => {
-    if (token == null) {
-        token = await Authentication.signUp();
-        token = token.idToken;
-    }
-    return new Promise(function(resolve, reject) {
-        axios.post(MEDIA_URL, {
-                "media_expiry": "HOURS_72",
-                "media_suffix": "jpeg",
-                "num_uploads": 1
-            }, {
-                headers: defineHeaders(token, "application/json")
-            })
-            .then(function(response) {
-                resolve(response.data[0]);
-            })
-            .catch(function(error) {
-                resolve(error);
-            });
-    });
-}
+// Upload photo to upload URL
+const uploadPhoto = async(imagePath, targetImageURL) => {
+    let FormData = require('form-data');
+    let fs = require('fs');
+    var form_data = new FormData();
 
-const uploadPhoto = async(imageBuffer, token = null) => {
-    if (token == null) {
-        token = await Authentication.signUp();
-        token = token.idToken;
-    }
-    let URL = await getUploadURL(token);
     return new Promise(function(resolve, reject) {
-        axios.put(URL.media_url, imageBuffer, {
-                headers: {
-                    'Content-Type': 'image/jpeg',
-                    'Content-Length': imageBuffer.length,
-                },
-            })
-            .then(function(response) {
-                resolve(URL.id);
-            })
-            .catch(function(error) {
-                resolve(error);
-            });
+        Object.entries(targetImageURL.fields).forEach(([field, value]) => {
+            form_data.append(field, value);
+        });
+        form_data.append("file", fs.createReadStream(imagePath));
+
+        form_data.submit(targetImageURL.url, (err, res) => {
+            if (err) reject(err)
+            else resolve(res.statusCode)
+        });
     });
 }
 
 // Using the new task ID, supply a prompt and start the image generation process.
-const createTask = (token, prompt, style, imageId = null, weight = "MEDIUM", freq = 10) => {
-    if (weight != "LOW" && weight != "MEDIUM" && weight != "HIGH") {
-        weight = "MEDIUM";
-    }
-    var jsonData = {
-        "is_premium": false,
-        "input_spec": {
-            "prompt": prompt,
-            "style": style,
-            "display_freq": freq
-        }
-    };
-    if (imageId != null) {
-        jsonData.input_spec.input_image = {
-            "mediastore_id": imageId,
-            "weight": weight
-        }
+const createTask = (token, taskID, prompt, style_id, weight = "MEDIUM", width = 950, height = 1560) => {
+    switch (typeof weight) {
+        case 'string':
+            if (weight == "LOW") {
+                weight = 0.1;
+            } else if (weight == "HIGH") {
+                weight = 1.0;
+            } else {
+                weight = 0.5;
+            }
+            break;
+        case 'number':
+            if (weight < 0 || weight > 1) {
+                weight = 0.5;
+            }
+            break;
+        default:
+            weight = 0.5;
+            break;
     }
 
+    var jsonData = {    
+        'input_spec': {
+            'style': style_id,
+            'prompt': prompt,
+            'target_image_weight': weight,
+            'width': width,
+            'height': height
+        }
+    };
+
     return new Promise(function(resolve, reject) {
-        axios.post(API_URL, jsonData, {
-                headers: defineHeaders(token)
+        axios.put(API_URL + taskID, jsonData, {
+                headers: defineHeaders(token, "application/json")
             })
             .then(function(response) {
                 resolve(response.data);
             })
             .catch(function(error) {
-                resolve(error.response.data);
+                reject(error.response.data);
             });
     });
 }
@@ -154,7 +128,7 @@ const checkStatus = async(token, taskID, interval = null, callback = null) => {
     return new Promise(async function(resolve, reject) {
         if (interval == null) {
             axios.get(API_URL + taskID, {
-                    headers: defineHeaders(token)
+                    headers: defineHeaders(token, "application/json")
                 })
                 .then(function(response) {
                     if (callback && typeof callback === 'function') {
@@ -163,14 +137,14 @@ const checkStatus = async(token, taskID, interval = null, callback = null) => {
                     resolve(response.data);
                 })
                 .catch(function(error) {
-                    resolve(error);
+                    reject(error);
                 });
         } else {
             if (typeof interval !== 'number') {
                 interval = 1000;
             }
             axios.get(API_URL + taskID, {
-                    headers: defineHeaders(token)
+                    headers: defineHeaders(token, "application/json")
                 })
                 .then(async function(response) {
                     var result = response.data;
@@ -179,9 +153,9 @@ const checkStatus = async(token, taskID, interval = null, callback = null) => {
                     }
                     while (result.state != "completed" && result.state != "failed") { // While the task is still generating
                         try {
-                            result = (await axios.get(API_URL + taskID, { headers: defineHeaders(token) })).data;
+                            result = (await axios.get(API_URL + taskID, { headers: defineHeaders(token, "application/json") })).data;
                         } catch (error) {
-                            resolve(error);
+                            reject(error);
                         }
                         if (result.state != "completed" && result.state != "failed") {
                             if (callback && typeof callback === 'function') {
@@ -193,65 +167,22 @@ const checkStatus = async(token, taskID, interval = null, callback = null) => {
                     resolve(result);
                 })
                 .catch(function(error) {
-                    resolve(error);
+                    reject(error);
                 });
         }
     });
 }
 
-// User account must have username set in order to save
-const saveToGallery = async(token, taskID, settings = { "name": "", "public": false, "visible": true }) => {
-    if (settings == null) {
-        settings = { "name": "", "public": false, "visible": true };
-    }
-    return new Promise(function(resolve, reject) {
-        axios.post(GALLERY_URL, {
-                "task_id": taskID,
-                "name": settings.name,
-                "is_public": settings.public,
-                "is_prompt_visible": settings.visible
-            }, {
-                headers: defineHeaders(token)
-            })
-            .then(function(response) {
-                resolve(response.data);
-            })
-            .catch(function(error) {
-                resolve(error);
-            });
-    });
-}
+const generateImage = async(style, promptValue, token, image = null, weight = "MEDIUM", height = 950, width = 1560, callback = null, interval = 1000, freq = 10) => {
+    let task = await createTaskID(token, image ? true : false); // Create the task
+    let taskID = task.id;
 
-const getGallery = (token) => {
-    return new Promise(function(resolve, reject) {
-        axios.get(GALLERY_URL, {
-                headers: defineHeaders(token)
-            })
-            .then(function(response) {
-                resolve(response.data);
-            })
-            .catch(function(error) {
-                resolve(error);
-            });
-    });
-}
+    if (image != null && task.target_image_url) {
+        let imageResult = await uploadPhoto(image, task.target_image_url);
+    }
 
-const generateImage = async(style, promptValue, token = null, image = null, weight = "MEDIUM", save = false, saveSettings = { "name": "", "public": false, "visible": true }, callback = null, interval = 1000, freq = 10) => {
-    if (token == null) {
-        token = await Authentication.signUp();
-        token = token.idToken;
-        save = false;
-    }
-    if (weight != "LOW" && weight != "MEDIUM" && weight != "HIGH") {
-        weight = "MEDIUM";
-    }
-    if (image != null) {
-        let imageId = await uploadPhoto(image, token);
-        var result = await createTask(token, promptValue, style, imageId, weight, freq); // Create the task
-    } else {
-        var result = await createTask(token, promptValue, style, image, weight, freq); // Create the task
-    }
-    let taskID = result.id;
+    let result = await createTask(token, taskID, promptValue, style, weight, width, height)
+
     if (callback && typeof callback === 'function') {
         callback(result);
     } else {
@@ -264,20 +195,13 @@ const generateImage = async(style, promptValue, token = null, image = null, weig
             console.log("generating...");
         }
     });
-    if (save) {
-        await saveToGallery(token, taskID, saveSettings); // Save the task to the gallery
-    }
     return result
 }
 
 exports.getStyles = getStyles;
 exports.printStyles = printStyles;
-exports.getUploadURL = getUploadURL;
+exports.createTaskID = createTaskID;
 exports.uploadPhoto = uploadPhoto;
 exports.createTask = createTask;
 exports.checkStatus = checkStatus;
 exports.generateImage = generateImage;
-exports.getTaskShopURL = getTaskShopURL;
-exports.getTradingCardURL = getTradingCardURL;
-exports.saveToGallery = saveToGallery;
-exports.getGallery = getGallery;
