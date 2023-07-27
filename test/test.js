@@ -15,11 +15,11 @@ describe('dream-api tests', async function() {
         styles.should.be.an('array');
     });
     it('generateImage() (prompt only) responds with image object', async function() {
-        this.image = await WomboDream.generateImage(1, "dog", this.token, null, "MEDIUM", null, null, function() {});
+        this.image = await WomboDream.generateImage(1, "dog", this.token, null, "MEDIUM", null, null);
         this.image.should.have.property('result');
     });
     it('generateImage() (prompt + upload) responds with image object', async function() {
-        this.image = await WomboDream.generateImage(1, "dog", this.token,'./test/test.jpg', "MEDIUM", null, null, function() {});
+        this.image = await WomboDream.generateImage(1, "dog", this.token,'./test/test.jpg', "MEDIUM", null, null);
         this.image.should.have.property('result');
     });
 });
