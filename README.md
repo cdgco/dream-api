@@ -10,7 +10,7 @@ Promise based NodeJS API for Wombo Dream.
 
 Add `dream-api` to your project:
 ```
-npm install dream-api
+npm i dream-api
 ```
 
 Sign up for [Dream API](https://api.dream.ai/signup) to get an API key.
