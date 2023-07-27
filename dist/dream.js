@@ -173,7 +173,7 @@ const checkStatus = async(token, taskID, interval = null, callback = null) => {
     });
 }
 
-const generateImage = async(style, promptValue, token, image = null, weight = "MEDIUM", height = 950, width = 1560, callback = null, interval = 1000, freq = 10) => {
+const generateImage = async(style, promptValue, token, image = null, weight = "MEDIUM", width = 950, height = 1560, callback = null, interval = 1000) => {
     let task = await createTaskID(token, image ? true : false); // Create the task
     let taskID = task.id;
 
@@ -200,8 +200,8 @@ const generateImage = async(style, promptValue, token, image = null, weight = "M
 
 exports.getStyles = getStyles;
 exports.printStyles = printStyles;
-exports.createTaskID = createTaskID;
 exports.uploadPhoto = uploadPhoto;
+exports.createTaskID = createTaskID;
 exports.createTask = createTask;
 exports.checkStatus = checkStatus;
 exports.generateImage = generateImage;

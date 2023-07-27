@@ -1,6 +1,6 @@
 # Wombo Dream API
 
-> **Warning**: **Third party API access through this package has been blocked by Wombo.** Updates coming soon: https://github.com/cdgco/dream-api/issues/8#issuecomment-1599456105
+> **Note** : Dream API now uses the official [Wombo Dream API](https://api.dream.ai/) and requires an API key. Endpoints for gallery, trading card, and shop are no longer supported. See [changelog](https://github.com/cdgco/dream-api/releases) for more details.
 
 Promise based NodeJS API for Wombo Dream. 
 
@@ -11,106 +11,52 @@ Add `dream-api` to your project:
 ```
 npm install dream-api
 ```
+
+Sign up for [Dream API](https://api.dream.ai/signup) to get an API key.
+
 ```
 const WomboDream = require('dream-api');
+const dreamKey = "<API-KEY-HERE>";
 ```
 
 # Usage
 
 ## Generate an image from a text prompt
 ```
-let image = await WomboDream.generateImage(1, "dog");
+let image = await WomboDream.generateImage(1, "dog", dreamKey);
 ```
 or
 ```
-WomboDream.generateImage(1, "dog").then(image => {
+WomboDream.generateImage(1, "dog", dreamKey).then(image => {
   console.log(image);
 });
 ```
 
 ## Generate an image from a text prompt and input image
 ```
-let buffer = fs.readFileSync('image.jpg');
-let image = await WomboDream.generateImage(1, "dog", null, buffer, "LOW");
+let image = await WomboDream.generateImage(1, "dog", dreamKey, "image.jpg", "LOW");
 ```
 or
 ```
-let buffer = fs.readFileSync('image.jpg');
-WomboDream.generateImage(1, "dog", null, buffer, "LOW").then(image => {
+WomboDream.generateImage(1, "dog", dreamKey, "image.jpg", "LOW").then(image => {
   console.log(image);
-});
-```
-
-## Generate an image, save it, and get the URL to purchase a print
-```
-let token = await WomboDream.signUp("email@email.com", "password", "username");
-let image = await WomboDream.generateImage(1, "dog", token.idToken, null, null, true);
-let purchaseURL = await WomboDream.getTaskShopURL(token.idToken, image.id);
-```
-or
-```
-WomboDream.signUp("email@email.com", "password", "username").then(token => {
-  WomboDream.generateImage(1, "dog", token.idToken, null, null, true).then(image => {
-    WomboDream.getTaskShopURL(token.idToken, image.id).then(purchaseURL => {
-      console.log(purchaseURL);
-    });
-  });
 });
 ```
 
 ## Generate an image, with a callback function
 ```
-let image = await WomboDream.generateImage(1, "dog", null, null, null, null, null, console.log));
+let image = await WomboDream.generateImage(1, "dog", dreamKey, null, null, null, null, console.log));
 ```
 or
 ```
-WomboDream.generateImage(1, "dog", null, null, null, null, null, console.log).then(image => {
+WomboDream.generateImage(1, "dog", dreamKey, null, null, null, null, console.log).then(image => {
   console.log(image);
-});
-```
-
-## Refresh token and print user gallery
-```
-let token = await WomboDream.signIn("email@email.com", "password");
-token = await WomboDream.refreshToken(token.refreshToken);
-let gallery = await WomboDream.getGallery(token.idToken));
-```
-or
-```
-WomboDream.signIn("email@email.com", "password").then(token => {
-  WomboDream.refreshToken(token.refreshToken).then(refresh => {
-    WomboDream.getGallery(refresh.idToken).then(gallery => {
-      console.log(gallery);
-    });
-  });
 });
 ```
 
 See [examples/await.js](https://github.com/cdgco/dream-api/blob/main/examples/await.js) and [examples/promise.js](https://github.com/cdgco/dream-api/blob/main/examples/promise.js) for much more example code.
 
 # Functions
-<hr>
-
-## Authentication
-`signUp([email, password, username])`
-- Creates a new user account. Returns token object.
-- `email`: `string` (Optional) Email address. Must not already exist.
-- `password`: `string` (Optional) Password.
-- `username`: `string` (Optional) Username. Must not already exist.
-
-`signIn(email, password)`
-- Signs in a user account. Returns token object.
-- `email`: `string` Email address.
-- `password`: `string` Password.
-
-`refresh(refreshToken)`
-- Refreshes a user's access token. Returns token object.
-- Works for anonymous and named users.
-- `refreshToken`: `string` Refresh token. 
-  - `(await WomboDream.signUp()).refreshToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).refreshToken`
-  - `(await WomboDream.signIn('username', 'password)).refreshToken`
-
 <hr>
 
 ## Styles
@@ -127,61 +73,53 @@ See [examples/await.js](https://github.com/cdgco/dream-api/blob/main/examples/aw
 
 ## Image Generation
 
-`generateImage(style, prompt [, token] [, imageBuffer [, weight]] [, save [, saveSettings]] [, callback] [, interval], [, frequency])`
+`generateImage(style, prompt, token [, imagePath [, weight]] [, width] [, height] [, callback] [, interval])`
 - Generates an image based on the style, prompt and input image. Returns image object.
 - Set any optional parameter to `null` in order to skip that function and use a later parameter.
 - `style`: `int` Style number (from getStyles()).
 - `prompt`: `string` Image prompt. String of up to 100 characters.
-- `token`: `string` (Optional) Access token.
-  - If token is not provided, anonymous token will be generated. Saving will be disabled if token not provided.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
-- `imageBuffer`: `buffer` (Optional) Buffer of jpg / jpeg image to use.
-- `weight`: `string` (Optional) Influence of the input image.
-    - `LOW`, `MEDIUM` or  `HIGH`
-    - Defaults to `MEDIUM`
-- `save`: `boolean` (Optional) Whether to save the image to the user's account.
-  - token must be provided for a user account. Save will fail if username not set or token is for anonymous account.
-  - Defaults to `false`
-- `saveSettings`: `object` (Optional) JSON object with settings for saving the image.
-  - `{ "name": nameValue, "public": publicValue, "visible": visibleValue }`
-    - `nameValue`: `string` Name of the image.
-    - `publicValue`: `boolean` Whether the image is public.
-    - `visibleValue`: `boolean` Whether the name is visible on the image.
-    - Defaults to `{ "name": "", "public": false, "visible": true }`
+- `token`: `string` API Key
+- `imagePath`: `string` (Optional) Path to jpg / jpeg image.
+- `weight`: `string` or `float` (Optional) Influence of the input image.
+    - String `LOW`, `MEDIUM` or  `HIGH`
+    - Float 0.0 - 1.0
+    - Defaults to `MEDIUM` (0.5)
+- `width`: `int` (Optional) Width of image
+  - Defaults to 950
+- `height`: `int` (Optional) Height of image
+  - Defaults to 1560
 - `callback`: `function` (Optional) Callback function for intermediate image generation steps.
   - callback is passed 1 argument, the JSON image object containing the status, task info and intermediate images.
 - `interval`: `int` (Optional) Milliseconds to wait between status checks and callback function.
   - Defaults to `1000`
-- `frequency`: `int` (Optional) Frequency of the intermediate image generation.
-  - Defaults to `10`
 
-`createTask(token, prompt, style [, imageId [, weight]] [, frequency])`
+`createTaskID(token [, image])`
 - Creates a new image generation task (used internally in generateImage()). Returns image object.
-- `token`: `string` Access token.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
+- `token`: `string` API Key
+- `image`: `boolean` Whether or not to use influence image (specified in createTast())
+
+`createTask(token, taskID, prompt, style [, weight] [, width] [, height])`
+- Configure and start image generation task (used internally in generateImage()). Returns image object.
+- `token`: `string` API Key
+- `taskID`: `string` ID of the task.
+  - `await WomboDream.createTaskID(...).id`
 - `prompt`: `string` Image prompt. String of up to 100 characters.
 - `style`: `int` Style number (from getStyles()).
-- `imageId`: `string` (Optional) ID of uploaded image to use.
-  - `await WomboDream.uploadPhoto(buffer)`
-- `weight`: `string` (Optional) Influence of the input image.
-    - `LOW`, `MEDIUM` or  `HIGH`
-    - Defaults to `MEDIUM`
-- `frequency`: `int` (Optional) Frequency of the intermediate image generation.
-  - Defaults to `10`
+- `weight`: `string` or `float` (Optional) Influence of the input image.
+    - String `LOW`, `MEDIUM` or  `HIGH`
+    - Float 0.0 - 1.0
+    - Defaults to `MEDIUM` (0.5)
+- `width`: `int` (Optional) Width of image
+  - Defaults to 950
+- `height`: `int` (Optional) Height of image
+  - Defaults to 1560
 
 `checkStatus(token, taskID [, interval] [, callback])`
 - Check status of image generation task (used internally in generateImage()). Returns image object.
 - If loop is unset or null, will check status once. If set to true, will check status every `loop` ms until task is complete.
-- `token`: `string` Access token.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
+- `token`: `string` API Key
 - `taskID`: `string` ID of the task.
-  - `await WomboDream.createTask(...).id`
+  - `await WomboDream.createTaskID(...).id`
 - `interval`: `int` (Optional) Milliseconds to wait between status checks.
 - `callback`: `function` (Optional) Callback function for intermediate image generation steps.
 
@@ -189,87 +127,21 @@ See [examples/await.js](https://github.com/cdgco/dream-api/blob/main/examples/aw
 
 ## Additional Functions
 
-`uploadPhoto(buffer [, token])`
-- Uploads a photo for later use and returns upload ID (used internally in generateImage()). Returns upload id.
-- Works for anonymous and named users. If token is not supplied, anonymous token will be used.
-- `buffer`: `buffer` Buffer of jpg / jpeg image.
-- `token`: `string` (Optional) Access token.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
+`uploadPhoto(imagePath, token)`
+- Uploads a photo for later use (used internally in generateImage()). Returns upload status code.
+- `imagePath`: `string` Path to jpg / jpeg image.
+- `token`: `string` API Key.
 
-`getUploadURL([token])`
-- Returns a URL to upload an image for later use (used internally in uploadPhoto()). Returns upload object.
-- Works for anonymous and named users. If token is not supplied, anonymous token will be used.
-- `token`: `string` (Optional) Access token.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
-
-`getTaskShopURL(token, taskID)`
-- Get URL to purchase print of generated image. Returns URL.
-- `token`: `string` Access token.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
-- `taskID`: `string` ID of the task.
-  - `(await WomboDream.createTask(...)).id`
-
-`getTradingCardURL(token, taskID)`
-- Get URL of trading card of a generated image. Returns URL.
-- `token`: `string` Access token.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
-- `taskID`: `string` ID of the task.
-  - `(await WomboDream.createTask(...)).id`
-
-`saveToGallery(token, taskID [, saveSettings])`
-- Save image to user account (used internally in generateImage()). Returns gallery item.
-- `token`: `string` Access token.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
-  - token must be provided for a user account. Save will fail if username not set or token is for anonymous account.
-- `taskID`: `string` ID of the task.
-  - `(await WomboDream.createTask(...)).id`
-- `saveSettings`: `object` (Optional) JSON object with settings for saving the image.
-  - `{ "name": nameValue, "public": publicValue, "visible": visibleValue }`
-    - `nameValue`: `string` Name of the image.
-    - `publicValue`: `boolean` Whether the image is public.
-    - `visibleValue`: `boolean` Whether the name is visible on the image.
-    - Defaults to `{ "name": "", "public": false, "visible": true }`
-
-`getGallery(token)`
-- Get list of images saved to a user's account. Returns array of gallery items.
-- `token`: `string` Access token.
-  - `(await WomboDream.signUp()).idToken`
-  - `(await WomboDream.signUp('email', 'password', 'username')).idToken`
-  - `(await WomboDream.signIn('username', 'password)).idToken`
-  - token must be provided for a non-guest user account.
-  
 # Development & Testing
-
-## API Structure
-
-Wombo is a firebase app and authentication is handled by Google Firebase Authentication with guest and username / password authentication. Some functions are not available for guest accounts. All authentication functions are handled in `dist/auth.js`.
-
-All AI related functions are handled in `dist/dream.js`.
-
-dream-api is a CommonJS module with public exports defined in `dist/app.js`.
 
 ## Testing
 
-Mocha tests for some basic functions are included in `test/test.js`, runnable through `npm test`. Not all functions are tested as they require a non-guest account to run, or have duplicate functionality of others. The primary purpose of testing is to ensure that the internal Wombo API URLs are still valid.
+Mocha tests for some basic functions are included in `test/test.js`, runnable through `npm test`. To run tests, set environment variable `DREAM_API_KEY` or use `DREAM_API_KEY=KEY_HERE npm test` to temporarily set variable. Not all functions are tested. The primary purpose of testing is to ensure that the internal Wombo API URLs are still valid.
 
 Tested functions include:
-* User sign-up / id token generation
-* Refresh token generation
 * Style retrieval
 * Prompt based generation
 * Image based generation
-* Trading card retrieval
-* Purchase URL retrievel
 
 Tests are run through CircleCI weekly, and on every commit using `.circleci/config.yml`. If any test fails, the script will throw exit code 1, rather than exit code 0, and will set the test status to failed, indicating that at least one API function is broken. To see test results, visit the [CircleCI testing page](https://app.circleci.com/pipelines/github/cdgco/dream-api).
 
