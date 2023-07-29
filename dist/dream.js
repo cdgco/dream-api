@@ -129,9 +129,12 @@ const checkStatus = async(token, taskID, interval = null, timeout = null, callba
         timeout = 60000;
     }
 
+    let killPromise = false;
+
     return Promise.race([
         new Promise((resolve, reject) => {
             setTimeout(() => {
+                killPromise = true;
                 reject(new Error('Timeout'));
             }, timeout);
         }),
@@ -161,7 +164,7 @@ const checkStatus = async(token, taskID, interval = null, timeout = null, callba
                         if (callback && typeof callback === 'function') {
                             callback(result);
                         }
-                        while (result.state != "completed" && result.state != "failed" && result.result == null) { // While the task is still generating
+                        while (!killPromise && result.state != "completed" && result.state != "failed" && result.result == null) { // While the task is still generating
                             // Get the latest data
                             try {
                                 result = (await axios.get(API_URL + taskID, { headers: defineHeaders(token, "application/json") })).data;
