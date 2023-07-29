@@ -7,8 +7,8 @@ async function main() {
     //////// AUTHENTICATION ////////
     ////////////////////////////////
 
-    // Anonymous Token
-    let token = "<API-KEY-HERE>"; 
+    // Wombo Dream API Key
+    let token = "<API-KEY-HERE>";
 
     ////////////////////////////////
     //////////// STYLES ////////////
@@ -17,12 +17,12 @@ async function main() {
     // Print formatted table of styles to console
     await WomboDream.printStyles();
 
-    // // Get styles
+    // Get styles
     let styles = await WomboDream.getStyles();
 
-    // ////////////////////////////////
-    // /////// IMAGE GENERATION ///////
-    // ////////////////////////////////
+    ////////////////////////////////
+    /////// IMAGE GENERATION ///////
+    ////////////////////////////////
 
     // Generate image from prompt only
     let image1 = await WomboDream.generateImage(1, "dog", token);

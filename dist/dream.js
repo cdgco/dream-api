@@ -174,28 +174,33 @@ const checkStatus = async(token, taskID, interval = null, callback = null) => {
 }
 
 const generateImage = async(style, promptValue, token, image = null, weight = "MEDIUM", width = 950, height = 1560, callback = null, interval = 1000) => {
-    let task = await createTaskID(token, image ? true : false); // Create the task
-    let taskID = task.id;
+    try {
+        let task = await createTaskID(token, image ? true : false); // Create the task
+        let taskID = task.id;
 
-    if (image != null && task.target_image_url) {
-        let imageResult = await uploadPhoto(image, task.target_image_url);
-    }
+        if (image != null && task.target_image_url) {
+            let imageResult = await uploadPhoto(image, task.target_image_url);
+        }
 
-    let result = await createTask(token, taskID, promptValue, style, weight, width, height)
+        let result = await createTask(token, taskID, promptValue, style, weight, width, height)
 
-    if (callback && typeof callback === 'function') {
-        callback(result);
-    } else {
-        console.log("creating task...");
-    }
-    result = await checkStatus(token, taskID, interval, (result) => {
         if (callback && typeof callback === 'function') {
             callback(result);
         } else {
-            console.log("generating...");
+            console.log("creating task...");
         }
-    });
-    return result
+        result = await checkStatus(token, taskID, interval, (result) => {
+            if (callback && typeof callback === 'function') {
+                callback(result);
+            } else {
+                console.log("generating...");
+            }
+        });
+        return result
+    } catch (error) {
+        console.error(error);
+    }
+
 }
 
 exports.getStyles = getStyles;

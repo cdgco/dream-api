@@ -4,6 +4,7 @@ const WomboDream = require('../dist/app');
 //////// AUTHENTICATION ////////
 ////////////////////////////////
 
+// Wombo Dream API Key
 var token = "<API-KEY-HERE>";
 
 ////////////////////////////////
