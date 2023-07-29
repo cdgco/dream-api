@@ -124,56 +124,77 @@ const createTask = (token, taskID, prompt, style_id, weight = "MEDIUM", width = 
 }
 
 // Check the status of the task. This function returns all data including progress photos and result.
-const checkStatus = async(token, taskID, interval = null, callback = null) => {
-    return new Promise(async function(resolve, reject) {
-        if (interval == null) {
-            axios.get(API_URL + taskID, {
-                    headers: defineHeaders(token, "application/json")
-                })
-                .then(function(response) {
-                    if (callback && typeof callback === 'function') {
-                        callback(response.data);
-                    }
-                    resolve(response.data);
-                })
-                .catch(function(error) {
-                    reject(error);
-                });
-        } else {
-            if (typeof interval !== 'number') {
-                interval = 1000;
-            }
-            axios.get(API_URL + taskID, {
-                    headers: defineHeaders(token, "application/json")
-                })
-                .then(async function(response) {
-                    var result = response.data;
-                    if (callback && typeof callback === 'function') {
-                        callback(result);
-                    }
-                    while (result.state != "completed" && result.state != "failed") { // While the task is still generating
-                        try {
-                            result = (await axios.get(API_URL + taskID, { headers: defineHeaders(token, "application/json") })).data;
-                        } catch (error) {
-                            reject(error);
+const checkStatus = async(token, taskID, interval = null, timeout = null, callback = null) => {
+    if (typeof timeout !== 'number') {
+        timeout = 60000;
+    }
+
+    return Promise.race([
+        new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error('Timeout'));
+            }, timeout);
+        }),
+        new Promise((resolve, reject) => {
+            if (interval == null) {
+                axios.get(API_URL + taskID, {
+                        headers: defineHeaders(token, "application/json")
+                    })
+                    .then(function(response) {
+                        if (callback && typeof callback === 'function') {
+                            callback(response.data);
                         }
-                        if (result.state != "completed" && result.state != "failed") {
-                            if (callback && typeof callback === 'function') {
-                                callback(result);
+                        resolve(response.data);
+                    })
+                    .catch(function(error) {
+                        reject(error);
+                    });
+            } else {
+                if (typeof interval !== 'number') {
+                    interval = 1000;
+                }
+                axios.get(API_URL + taskID, {
+                        headers: defineHeaders(token, "application/json")
+                    })
+                    .then(async function(response) {
+                        var result = response.data;
+                        if (callback && typeof callback === 'function') {
+                            callback(result);
+                        }
+                        while (result.state != "completed" && result.state != "failed" && result.result == null) { // While the task is still generating
+                            // Get the latest data
+                            try {
+                                result = (await axios.get(API_URL + taskID, { headers: defineHeaders(token, "application/json") })).data;
+                            } catch (error) {
+                                reject(error);
                             }
+                            // If the task is still generating, call the callback function
+                            if (result.state != "completed" && result.state != "failed") {
+                                if (callback && typeof callback === 'function') {
+                                    callback(result);
+                                }
+                            } else {
+                                break;
+                            }
+
+                            // Wait for interval
+                            await new Promise(resolve => setTimeout(resolve, interval));
                         }
-                        await new Promise(resolve => setTimeout(resolve, interval));
-                    }
-                    resolve(result);
-                })
-                .catch(function(error) {
-                    reject(error);
-                });
-        }
-    });
+                        if (result.state == "failed") {
+                            reject(result);
+                        } else {
+                            resolve(result);
+                        }
+                    })
+                    .catch(function(error) {
+                        reject(error);
+                    });
+            }
+        })
+    ]);
 }
 
-const generateImage = async(style, promptValue, token, image = null, weight = "MEDIUM", width = 950, height = 1560, callback = null, interval = 1000) => {
+const generateImage = async(style, promptValue, token, image = null, weight = "MEDIUM", width = 950, height = 1560, callback = null, interval = 1000, timeout = 30000) => {
     try {
         let task = await createTaskID(token, image ? true : false); // Create the task
         let taskID = task.id;
@@ -189,11 +210,11 @@ const generateImage = async(style, promptValue, token, image = null, weight = "M
         } else {
             console.log("creating task...");
         }
-        result = await checkStatus(token, taskID, interval, (result) => {
+        result = await checkStatus(token, taskID, interval, timeout, (result) => {
             if (callback && typeof callback === 'function') {
                 callback(result);
             } else {
-                console.log("generating...");
+                console.log(result.state + "...")
             }
         });
         return result

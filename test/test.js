@@ -4,7 +4,7 @@ const assert = require('assert');
 var should = require('chai').should();
 
 describe('dream-api tests', async function() {
-    this.timeout(60000);
+    this.timeout(30000);
     this.retries(2);
     before(async function() {
         this.token = process.env.DREAM_API_KEY;
