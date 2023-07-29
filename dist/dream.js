@@ -130,12 +130,13 @@ const checkStatus = async(token, taskID, interval = null, timeout = null, callba
     }
 
     let killPromise = false;
+    var killTimeoutId = null;
 
     return Promise.race([
         new Promise((resolve, reject) => {
-            setTimeout(() => {
+            killTimeoutId = setTimeout(() => {
                 killPromise = true;
-                reject(new Error('Timeout'));
+                reject(new Error('Reached Generation Timeout'));
             }, timeout);
         }),
         new Promise((resolve, reject) => {
@@ -144,12 +145,14 @@ const checkStatus = async(token, taskID, interval = null, timeout = null, callba
                         headers: defineHeaders(token, "application/json")
                     })
                     .then(function(response) {
+                        clearTimeout(killTimeoutId);
                         if (callback && typeof callback === 'function') {
                             callback(response.data);
                         }
                         resolve(response.data);
                     })
                     .catch(function(error) {
+                        clearTimeout(killTimeoutId);
                         reject(error);
                     });
             } else {
@@ -169,6 +172,7 @@ const checkStatus = async(token, taskID, interval = null, timeout = null, callba
                             try {
                                 result = (await axios.get(API_URL + taskID, { headers: defineHeaders(token, "application/json") })).data;
                             } catch (error) {
+                                clearTimeout(killTimeoutId);
                                 reject(error);
                             }
                             // If the task is still generating, call the callback function
@@ -184,12 +188,15 @@ const checkStatus = async(token, taskID, interval = null, timeout = null, callba
                             await new Promise(resolve => setTimeout(resolve, interval));
                         }
                         if (result.state == "failed") {
+                            clearTimeout(killTimeoutId);
                             reject(result);
                         } else {
+                            clearTimeout(killTimeoutId);
                             resolve(result);
                         }
                     })
                     .catch(function(error) {
+                        clearTimeout(killTimeoutId);
                         reject(error);
                     });
             }
